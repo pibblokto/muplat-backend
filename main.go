@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"github.com/muplat/muplat-backend/controllers"
@@ -26,6 +27,7 @@ func main() {
 	protected.GET("/user", controllers.CurrentUser)
 	protected.GET("/secret", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"secret": "yo_mama"})
+		fmt.Println(">>> Route handler print")
 	})
 
 	r.Run(":8080")
