@@ -7,23 +7,33 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
 var appConf bootstrap.AppCfg = bootstrap.LoadConfig()
 
 func ConnectCluster() (*kubernetes.Clientset, error) {
+	var clientset *kubernetes.Clientset
+	var config *rest.Config
+	var err error
 
-	config, err := clientcmd.BuildConfigFromFlags("", appConf.KubeconfigPath)
+	if appConf.ConnectionMode == "external" {
+		config, err = clientcmd.BuildConfigFromFlags("", appConf.KubeconfigPath)
+		if err != nil {
+			return nil, err
+		}
+
+	} else if appConf.ConnectionMode == "internal" {
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			return nil, err
+		}
+	}
+	clientset, err = kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, err
 	}
-
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
 	return clientset, nil
 }
 

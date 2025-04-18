@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: muplat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: muplat
+  template:
+    metadata:
+      labels:
+        app: muplat
+    spec:
+      serviceAccountName: muplat-sa
+      containers:
+        - name: muplat
+          image: {{ printf "%s:%s" .Values.repository .Values.tag }}
+          env:
+            - name: CONNECTION_MODE
+              value: "internal"
+          ports:
+          - name: http
+            containerPort: 8080

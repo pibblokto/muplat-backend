@@ -11,7 +11,7 @@ func main() {
 
 	public := r.Group("/api")
 
-	public.POST("create/ns", controllers.CreateNamespace)
+	public.POST("/ns", controllers.CreateNamespace)
 
 	r.Run(":8080")
 }
