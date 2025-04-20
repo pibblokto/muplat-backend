@@ -7,17 +7,18 @@ import (
 )
 
 type MuplatCfg struct {
-	ConnectionMode   string `env:"CONNECTION_MODE" envDefault:"internal"`
-	KubeconfigPath   string `env:"KUBECONFIG"`
-	PostgresHost     string `env:"POSTGRES_HOST"`
-	PostgresUser     string `env:"POSTGRES_USER"`
-	PostgresPassword string `env:"POSTGRES_PASSWORD"`
-	PostgresPort     string `env:"POSTGRES_PORT" envDefault:"5432"`
-	Database         string `env:"DATABASE"`
-	InitUser         string `env:"INIT_USER" envDefault:"admin"`
-	InitUserPassword string `env:"INIT_USER_PASSWORD"`
-	JwtLifespanHours string `env:"JWT_LIFESPAN_HOURS" envDefault:"1"`
-	JwtSecret        string `env:"JWT_SECRET" envDefault:"1"`
+	ConnectionMode        string `env:"CONNECTION_MODE" envDefault:"internal"`
+	KubeconfigPath        string `env:"KUBECONFIG"`
+	PostgresHost          string `env:"POSTGRES_HOST"`
+	PostgresUser          string `env:"POSTGRES_USER"`
+	PostgresPassword      string `env:"POSTGRES_PASSWORD"`
+	PostgresPort          string `env:"POSTGRES_PORT" envDefault:"5432"`
+	Database              string `env:"DATABASE"`
+	InitUser              string `env:"INIT_USER" envDefault:"admin"`
+	InitUserPassword      string `env:"INIT_USER_PASSWORD"`
+	JwtLifespanHours      string `env:"JWT_LIFESPAN_HOURS" envDefault:"1"`
+	JwtSecret             string `env:"JWT_SECRET" envDefault:"1"`
+	IngressNginxNamespace string `env:"INGRESS_NGINX_NAMESPACE" envDefault:"ingress-nginx"`
 }
 
 func LoadConfig() MuplatCfg {

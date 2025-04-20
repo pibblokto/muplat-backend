@@ -4,12 +4,16 @@ import (
 
 	//v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"context"
+
 	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 )
 
-func CreateNetworkPolicy(
+func CreateNetworkPolicyObject(
 	name string,
+	namespace string,
 	labels map[string]string,
 	annotations map[string]string,
 	ingressNamespaceName string,
@@ -17,6 +21,7 @@ func CreateNetworkPolicy(
 	return &v1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        name,
+			Namespace:   namespace,
 			Labels:      labels,
 			Annotations: annotations,
 		},
@@ -52,4 +57,15 @@ func CreateNetworkPolicy(
 			},
 		},
 	}
+}
+
+func CreateNetworkPolicy(clientset *kubernetes.Clientset, np *v1.NetworkPolicy) error {
+	networkPolicy, _ := clientset.NetworkingV1().NetworkPolicies(np.Namespace).Get(context.Background(), np.Name, metav1.GetOptions{})
+	if networkPolicy.Name != np.Name {
+		_, err := clientset.NetworkingV1().NetworkPolicies(np.Namespace).Create(context.Background(), np, metav1.CreateOptions{})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

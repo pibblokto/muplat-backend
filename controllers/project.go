@@ -1,28 +1,58 @@
 package controllers
 
 import (
-	"context"
+	"encoding/hex"
 	"fmt"
 	"net/http"
+	"strings"
+
+	"crypto/sha1"
 
 	"github.com/gin-gonic/gin"
+	"github.com/muplat/muplat-backend/models"
 	"github.com/muplat/muplat-backend/pkg/jwt"
 	"github.com/muplat/muplat-backend/pkg/k8s"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"github.com/muplat/muplat-backend/pkg/setup"
 )
 
-type RequestNS struct {
-	Name        string            `json:"name" binding:"required"`
-	Labels      map[string]string `json:"labels"`
-	Annotations map[string]string `json:"annotations"`
+var cfg setup.MuplatCfg = setup.LoadConfig()
+
+type ProjectInput struct {
+	Name string `json:"name" binding:"required"`
 }
 
-func CreateNamespace(c *gin.Context) {
-
-	var ns RequestNS
-	if err := c.ShouldBindJSON(&ns); err != nil {
+func CreateProject(c *gin.Context) {
+	var input ProjectInput
+	var ingressNginxNamespace string = cfg.IngressNginxNamespace
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+	input.Name = strings.TrimSpace(input.Name)
+
+	username, err := jwt.ExtractTokenUsername(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	hasher := sha1.New()
+	hasher.Write(fmt.Appendf(nil, "%s%s", input.Name, username))
+	nameSuffix := hex.EncodeToString(hasher.Sum(nil))
+	nameSuffix = nameSuffix[:7]
+
+	namespaceName := strings.ToLower(fmt.Sprintf("%s-%s", input.Name, nameSuffix))
+	networkPolicyName := strings.ToLower(fmt.Sprintf("%s-%s", input.Name, nameSuffix))
+
+	namespaceLabels := map[string]string{
+		"name":         namespaceName,
+		"owner":        username,
+		"project-name": input.Name,
+	}
+	networkPolicyLabels := map[string]string{
+		"name":         networkPolicyName,
+		"owner":        username,
+		"project-name": input.Name,
 	}
 
 	clientset, err := k8s.ConnectCluster()
@@ -31,47 +61,43 @@ func CreateNamespace(c *gin.Context) {
 		return
 	}
 
-	namespace, _ := clientset.CoreV1().Namespaces().Get(context.TODO(), ns.Name, metav1.GetOptions{})
-	if namespace.Name != "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Namespace " + namespace.Name + " already exists"})
-		return
-	}
-
-	namespaceObject := k8s.CreateNamespaceObject(ns.Name, ns.Labels, ns.Annotations)
-
-	_, err = clientset.CoreV1().Namespaces().Create(context.TODO(), namespaceObject, metav1.CreateOptions{})
-
+	namespaceObject := k8s.CreateNamespaceObject(namespaceName, namespaceLabels, map[string]string{})
+	err = k8s.CreateNamespace(clientset, namespaceObject)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "namespace " + ns.Name + " was created"})
-}
-
-type ProjectInput struct {
-	Name string `json:"username" binding:"required"`
-}
-
-func CreateProject(c *gin.Context) {
-	var project ProjectInput
-	if err := c.ShouldBindJSON(&project); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	}
-
-	username, err := jwt.ExtractTokenUsername(c)
+	namespacePolicyObject := k8s.CreateNetworkPolicyObject(
+		networkPolicyName,
+		namespaceName,
+		networkPolicyLabels,
+		map[string]string{},
+		ingressNginxNamespace,
+	)
+	err = k8s.CreateNetworkPolicy(clientset, namespacePolicyObject)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
-	namespaceName := fmt.Sprintf("%s-%s", username, project.Name)
-	networkPolicyName := fmt.Sprintf("%s-%s", username, project.Name)
 
-	namespaceLabels := map[string]string{
-		"name":  namespaceName,
-		"owner": username,
+	owner, err := jwt.ExtractTokenUsername(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
-	networkPolicyLabels := map[string]string{
-		"name":  networkPolicyName,
-		"owner": username,
+
+	newProject := models.Project{
+		Name:          input.Name,
+		Owner:         owner,
+		Namespace:     namespaceName,
+		NetworkPolicy: networkPolicyName,
 	}
+	_, err = newProject.SaveProject()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "project " + input.Name + " was created"})
 }

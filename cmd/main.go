@@ -15,10 +15,18 @@ func main() {
 	r := gin.Default()
 	r.RedirectTrailingSlash = true
 
+	public := r.Group("/api")
+	public.POST("/auth/login", controllers.Login)
+
 	projects := r.Group("/api/project")
 	projects.Use(middlewares.JwtAuth())
 
-	projects.POST("", controllers.CreateNamespace)
+	projects.POST("", controllers.CreateProject)
+
+	users := r.Group("/api/auth")
+	users.Use(middlewares.JwtAuth())
+
+	users.POST("/user", controllers.AddUser)
 
 	r.Run(":8080")
 }

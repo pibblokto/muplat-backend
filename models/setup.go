@@ -45,6 +45,7 @@ func CreateInitUser() {
 	var u User = User{
 		Username: cfg.InitUser,
 		Password: cfg.InitUserPassword,
+		Admin:    true,
 	}
 	err := db.Create(&u).Error
 	if err != nil {
