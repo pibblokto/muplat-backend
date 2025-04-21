@@ -9,5 +9,5 @@ func GetNameSuffix(s string) string {
 	hasher := sha1.New()
 	hasher.Write([]byte(s))
 	nameSuffix := hex.EncodeToString(hasher.Sum(nil))
-	return nameSuffix[:7]
+	return nameSuffix[:8]
 }

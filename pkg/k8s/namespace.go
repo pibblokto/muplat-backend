@@ -25,10 +25,15 @@ func CreateNamespaceObject(
 	}
 }
 
-func CreateNamespace(clientset *kubernetes.Clientset, ns *v1.Namespace) error {
+func ApplyNamespace(clientset *kubernetes.Clientset, ns *v1.Namespace) error {
 	namespace, _ := clientset.CoreV1().Namespaces().Get(context.Background(), ns.Name, metav1.GetOptions{})
 	if namespace.Name != ns.Name {
 		_, err := clientset.CoreV1().Namespaces().Create(context.Background(), ns, metav1.CreateOptions{})
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err := clientset.CoreV1().Namespaces().Update(context.Background(), ns, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
