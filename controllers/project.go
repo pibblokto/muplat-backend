@@ -1,12 +1,9 @@
 package controllers
 
 import (
-	"encoding/hex"
 	"fmt"
 	"net/http"
 	"strings"
-
-	"crypto/sha1"
 
 	"github.com/gin-gonic/gin"
 	"github.com/muplat/muplat-backend/models"
@@ -36,11 +33,7 @@ func CreateProject(c *gin.Context) {
 		return
 	}
 
-	hasher := sha1.New()
-	hasher.Write(fmt.Appendf(nil, "%s%s", input.Name, username))
-	nameSuffix := hex.EncodeToString(hasher.Sum(nil))
-	nameSuffix = nameSuffix[:7]
-
+	nameSuffix := k8s.GetNameSuffix(fmt.Sprintf("%s%s", input.Name, username))
 	namespaceName := strings.ToLower(fmt.Sprintf("%s-%s", input.Name, nameSuffix))
 	networkPolicyName := strings.ToLower(fmt.Sprintf("%s-%s", input.Name, nameSuffix))
 
@@ -92,7 +85,6 @@ func CreateProject(c *gin.Context) {
 		Owner:         owner,
 		Namespace:     namespaceName,
 		NetworkPolicy: networkPolicyName,
-		ProjectHash:   nameSuffix,
 	}
 	_, err = newProject.SaveProject()
 	if err != nil {

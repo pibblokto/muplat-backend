@@ -43,9 +43,10 @@ func CreateDeployment(c *gin.Context) {
 		return
 	}
 
-	deploymentName := strings.ToLower(fmt.Sprintf("%s-%s", input.Name, p.ProjectHash))
+	nameSuffix := k8s.GetNameSuffix(fmt.Sprintf("%s%s%s%s", input.Name, input.ProjectName, username))
+	deploymentName := strings.ToLower(fmt.Sprintf("%s-%s", input.Name, nameSuffix))
 	deploymentNamespace := p.Namespace
-	secretName := strings.ToLower(fmt.Sprintf("%s-%s", input.Name, p.ProjectHash))
+	secretName := strings.ToLower(fmt.Sprintf("%s-%s", input.Name, nameSuffix))
 
 	deploymentLabels := map[string]string{
 		"name":         deploymentName,
