@@ -55,7 +55,7 @@ func CreateProject(c *gin.Context) {
 	}
 
 	namespaceObject := k8s.CreateNamespaceObject(namespaceName, namespaceLabels, map[string]string{})
-	err = k8s.CreateNamespace(clientset, namespaceObject)
+	err = k8s.ApplyNamespace(clientset, namespaceObject)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -68,7 +68,7 @@ func CreateProject(c *gin.Context) {
 		map[string]string{},
 		ingressNginxNamespace,
 	)
-	err = k8s.CreateNetworkPolicy(clientset, namespacePolicyObject)
+	err = k8s.ApplyNetworkPolicy(clientset, namespacePolicyObject)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

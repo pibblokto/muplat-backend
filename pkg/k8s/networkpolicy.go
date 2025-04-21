@@ -59,10 +59,15 @@ func CreateNetworkPolicyObject(
 	}
 }
 
-func CreateNetworkPolicy(clientset *kubernetes.Clientset, np *v1.NetworkPolicy) error {
+func ApplyNetworkPolicy(clientset *kubernetes.Clientset, np *v1.NetworkPolicy) error {
 	networkPolicy, _ := clientset.NetworkingV1().NetworkPolicies(np.Namespace).Get(context.Background(), np.Name, metav1.GetOptions{})
 	if networkPolicy.Name != np.Name {
 		_, err := clientset.NetworkingV1().NetworkPolicies(np.Namespace).Create(context.Background(), np, metav1.CreateOptions{})
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err := clientset.NetworkingV1().NetworkPolicies(np.Namespace).Update(context.Background(), np, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}

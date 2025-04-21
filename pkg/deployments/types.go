@@ -56,6 +56,7 @@ type AppConfig struct {
 	Repository string            `json:"repository" binding:"required"`
 	Tag        string            `json:"tag" binding:"required"`
 	External   bool              `json:"external" binding:"required"`
+	DomainName string            `json:"domainName" binding:"required"`
 	Tier       AppTier           `json:"tier" binding:"required"`
 	Port       uint              `json:"port" binding:"required"`
 	EnvVars    map[string]string `json:"envVars"`
