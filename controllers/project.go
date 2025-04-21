@@ -92,6 +92,7 @@ func CreateProject(c *gin.Context) {
 		Owner:         owner,
 		Namespace:     namespaceName,
 		NetworkPolicy: networkPolicyName,
+		ProjectHash:   nameSuffix,
 	}
 	_, err = newProject.SaveProject()
 	if err != nil {
@@ -129,7 +130,7 @@ func DeleteProject(c *gin.Context) {
 	}
 
 	if p.Owner != username && !u.Admin {
-		c.JSON(http.StatusForbidden, gin.H{"error": fmt.Sprintf("only admin or owner of the project can delete it")})
+		c.JSON(http.StatusForbidden, gin.H{"error": "only admin or owner of the project can delete it"})
 		return
 	}
 

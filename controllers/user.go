@@ -123,11 +123,11 @@ func DeleteUser(c *gin.Context) {
 		return
 	}
 	if !u.Admin {
-		c.JSON(http.StatusForbidden, gin.H{"error": fmt.Sprintf("you have to be an admin in order to delete users")})
+		c.JSON(http.StatusForbidden, gin.H{"error": fmt.Sprint("you have to be an admin in order to delete users")})
 		return
 	}
 	if input.Username == InitUser {
-		c.JSON(http.StatusForbidden, gin.H{"error": fmt.Sprintf("can't delete initial user")})
+		c.JSON(http.StatusForbidden, gin.H{"error": fmt.Sprint("can't delete initial user")})
 		return
 	}
 
