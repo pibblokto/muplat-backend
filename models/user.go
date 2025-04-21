@@ -56,3 +56,11 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 
 	return nil
 }
+
+func (u *User) DeleteUser() error {
+	err := db.Model(&User{}).Delete(u).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}

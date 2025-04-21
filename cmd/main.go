@@ -22,11 +22,13 @@ func main() {
 	projects.Use(middlewares.JwtAuth())
 
 	projects.POST("", controllers.CreateProject)
+	projects.DELETE("", controllers.DeleteProject)
 
 	users := r.Group("/api/auth")
 	users.Use(middlewares.JwtAuth())
 
 	users.POST("/user", controllers.AddUser)
+	users.DELETE("/user", controllers.DeleteUser)
 
 	r.Run(":8080")
 }

@@ -69,3 +69,15 @@ func CreateNetworkPolicy(clientset *kubernetes.Clientset, np *v1.NetworkPolicy) 
 	}
 	return nil
 }
+
+func DeleteNetworkPolicy(clientset *kubernetes.Clientset, npName string, npNamespace string) error {
+	networkPolicy, _ := clientset.NetworkingV1().NetworkPolicies(npNamespace).Get(context.Background(), npName, metav1.GetOptions{})
+	if networkPolicy.Name != npName {
+		return nil
+	}
+	err := clientset.NetworkingV1().NetworkPolicies(npNamespace).Delete(context.Background(), npName, metav1.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}

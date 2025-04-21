@@ -35,3 +35,15 @@ func CreateNamespace(clientset *kubernetes.Clientset, ns *v1.Namespace) error {
 	}
 	return nil
 }
+
+func DeleteNaspace(clientset *kubernetes.Clientset, ns string) error {
+	namespace, _ := clientset.CoreV1().Namespaces().Get(context.Background(), ns, metav1.GetOptions{})
+	if namespace.Name != ns {
+		return nil
+	}
+	err := clientset.CoreV1().Namespaces().Delete(context.Background(), ns, metav1.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}

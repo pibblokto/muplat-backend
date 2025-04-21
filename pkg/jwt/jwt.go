@@ -15,7 +15,7 @@ import (
 var cfg setup.MuplatCfg = setup.LoadConfig()
 
 func GenerateToken(username string) (string, error) {
-	lifespanHours, err := strconv.Atoi(cfg.JwtLifespanHours)
+	lifespanMinutes, err := strconv.Atoi(cfg.JwtLifespanMinutes)
 	jwtSecret := cfg.JwtSecret
 
 	if err != nil {
@@ -25,7 +25,7 @@ func GenerateToken(username string) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["username"] = username
-	claims["exp"] = time.Now().Add(time.Hour * time.Duration(lifespanHours)).Unix()
+	claims["exp"] = time.Now().Add(time.Minute * time.Duration(lifespanMinutes)).Unix()
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(jwtSecret))

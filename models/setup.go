@@ -49,6 +49,6 @@ func CreateInitUser() {
 	}
 	err := db.Create(&u).Error
 	if err != nil {
-		log.Fatalf("Failed to create init user: %v", err)
+		log.Printf("Failed to create init user: %v", err)
 	}
 }
