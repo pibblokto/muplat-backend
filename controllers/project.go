@@ -101,3 +101,59 @@ func CreateProject(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "project " + input.Name + " was created"})
 }
+
+func DeleteProject(c *gin.Context) {
+	var input ProjectInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	p := models.Project{}
+	err := p.GetPorjectByName(input.Name)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	username, err := jwt.ExtractTokenUsername(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	u := models.User{}
+	err = u.GetUserByUsername(username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if p.Owner != username && !u.Admin {
+		c.JSON(http.StatusForbidden, gin.H{"error": fmt.Sprintf("only admin or owner of the project can delete it")})
+		return
+	}
+
+	clientset, err := k8s.ConnectCluster()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err = k8s.DeleteNetworkPolicy(clientset, p.NetworkPolicy, p.Namespace)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err = k8s.DeleteNaspace(clientset, p.Namespace)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = p.DeleteProject()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "project " + input.Name + " was deleted"})
+}

@@ -16,7 +16,7 @@ type MuplatCfg struct {
 	Database              string `env:"DATABASE"`
 	InitUser              string `env:"INIT_USER" envDefault:"admin"`
 	InitUserPassword      string `env:"INIT_USER_PASSWORD"`
-	JwtLifespanHours      string `env:"JWT_LIFESPAN_HOURS" envDefault:"1"`
+	JwtLifespanMinutes    string `env:"JWT_LIFESPAN_MINUTES" envDefault:"10"`
 	JwtSecret             string `env:"JWT_SECRET" envDefault:"1"`
 	IngressNginxNamespace string `env:"INGRESS_NGINX_NAMESPACE" envDefault:"ingress-nginx"`
 }

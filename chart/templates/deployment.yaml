@@ -26,15 +26,15 @@ spec:
             - name: POSTGRES_USER
               value: "app"
             - name: POSTGRES_PASSWORD
-              value: ""
+              value: "KNE697MQ4CNR6CmGh9oZdVta2CGLDILpsEGt3Lxc9WhRNpQNvLFBPNWFBTFyvjZ4"
             - name: DATABASE
               value: app
             - name: INIT_USER
               value: initAdmin
             - name: INIT_USER_PASSWORD
               value: "secretpassword"
-            - name: JWT_LIFESPAN_HOURS
-              value: "1"
+            - name: JWT_LIFESPAN_MINUTES
+              value: "25"
             - name: JWT_SECRET
               value: "jwtsupersecretpioakdwodi8ajd"
             - name: INGRESS_NGINX_NAMESPACE

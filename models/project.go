@@ -18,3 +18,19 @@ func (p *Project) SaveProject() (*Project, error) {
 	}
 	return p, nil
 }
+
+func (p *Project) GetPorjectByName(name string) error {
+	err := db.Model(&Project{}).Where("name = ?", name).Take(p).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Project) DeleteProject() error {
+	err := db.Model(&Project{}).Delete(p).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
