@@ -39,6 +39,8 @@ spec:
               value: "jwtsupersecretpioakdwodi8ajd"
             - name: INGRESS_NGINX_NAMESPACE
               value: "ingress-nginx"
+            - name: INGRESS_CLASS_NAME
+              value: nginx
           ports:
           - name: http
             containerPort: 8080

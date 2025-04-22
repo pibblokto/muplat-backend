@@ -107,3 +107,15 @@ func ApplyDeployment(clientset *kubernetes.Clientset, d *v1.Deployment) error {
 	}
 	return nil
 }
+
+func DeleteDeployment(clientset *kubernetes.Clientset, dName string, dNamespace string) error {
+	deployment, _ := clientset.AppsV1().Deployments(dNamespace).Get(context.Background(), dName, metav1.GetOptions{})
+	if deployment.Name != dName {
+		return nil
+	}
+	err := clientset.AppsV1().Deployments(dNamespace).Delete(context.Background(), dName, metav1.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}

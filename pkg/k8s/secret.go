@@ -47,3 +47,15 @@ func ApplySecret(clientset *kubernetes.Clientset, s *v1.Secret) error {
 	}
 	return nil
 }
+
+func DeleteSecret(clientset *kubernetes.Clientset, sName string, sNamespace string) error {
+	secret, _ := clientset.NetworkingV1().Ingresses(sNamespace).Get(context.Background(), sName, metav1.GetOptions{})
+	if secret.Name != sName {
+		return nil
+	}
+	err := clientset.CoreV1().Secrets(sNamespace).Delete(context.Background(), sName, metav1.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}

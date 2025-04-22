@@ -57,3 +57,15 @@ func ApplyService(clientset *kubernetes.Clientset, s *v1.Service) error {
 	}
 	return nil
 }
+
+func DeleteService(clientset *kubernetes.Clientset, sName string, sNamespace string) error {
+	service, _ := clientset.NetworkingV1().Ingresses(sNamespace).Get(context.Background(), sName, metav1.GetOptions{})
+	if service.Name != sName {
+		return nil
+	}
+	err := clientset.CoreV1().Secrets(sNamespace).Delete(context.Background(), sName, metav1.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}

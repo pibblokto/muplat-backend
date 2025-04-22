@@ -18,3 +18,11 @@ func (d *Deployment) SaveDeployment() (*Deployment, error) {
 	}
 	return d, nil
 }
+
+func (d *Deployment) DeleteDeployment() error {
+	err := db.Model(&Deployment{}).Delete(d).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}

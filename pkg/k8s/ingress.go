@@ -62,12 +62,12 @@ func CreateIngressObject(
 func ApplyIngress(clientset *kubernetes.Clientset, i *v1.Ingress) error {
 	ingress, _ := clientset.NetworkingV1().Ingresses(i.Namespace).Get(context.Background(), i.Name, metav1.GetOptions{})
 	if ingress.Name != i.Name {
-		_, err := clientset.NetworkingV1().Ingresses(i.Namespace).Create(context.Background(), ingress, metav1.CreateOptions{})
+		_, err := clientset.NetworkingV1().Ingresses(i.Namespace).Create(context.Background(), i, metav1.CreateOptions{})
 		if err != nil {
 			return err
 		}
 	} else {
-		_, err := clientset.NetworkingV1().Ingresses(i.Namespace).Update(context.Background(), ingress, metav1.UpdateOptions{})
+		_, err := clientset.NetworkingV1().Ingresses(i.Namespace).Update(context.Background(), i, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -75,13 +75,12 @@ func ApplyIngress(clientset *kubernetes.Clientset, i *v1.Ingress) error {
 	return nil
 }
 
-// To be changed
-func DeleteIngress(clientset *kubernetes.Clientset, npName string, npNamespace string) error {
-	networkPolicy, _ := clientset.NetworkingV1().NetworkPolicies(npNamespace).Get(context.Background(), npName, metav1.GetOptions{})
-	if networkPolicy.Name != npName {
+func DeleteIngress(clientset *kubernetes.Clientset, iName string, iNamespace string) error {
+	ingress, _ := clientset.NetworkingV1().Ingresses(iNamespace).Get(context.Background(), iName, metav1.GetOptions{})
+	if ingress.Name != iName {
 		return nil
 	}
-	err := clientset.NetworkingV1().NetworkPolicies(npNamespace).Delete(context.Background(), npName, metav1.DeleteOptions{})
+	err := clientset.NetworkingV1().Ingresses(iNamespace).Delete(context.Background(), iName, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
