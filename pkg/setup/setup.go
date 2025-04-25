@@ -19,6 +19,7 @@ type MuplatCfg struct {
 	JwtLifespanMinutes    string `env:"JWT_LIFESPAN_MINUTES" envDefault:"10"`
 	JwtSecret             string `env:"JWT_SECRET" envDefault:"1"`
 	IngressNginxNamespace string `env:"INGRESS_NGINX_NAMESPACE" envDefault:"ingress-nginx"`
+	IngressClassName      string `env:"INGRESS_CLASS_NAME" envDefault:"nginx"`
 }
 
 func LoadConfig() MuplatCfg {

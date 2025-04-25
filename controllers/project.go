@@ -33,22 +33,22 @@ func CreateProject(c *gin.Context) {
 		return
 	}
 
-	nameSuffix := k8s.GetNameSuffix(fmt.Sprintf("%s%s", input.Name, username))
+	nameSuffix := k8s.GetNameSuffix(input.Name)
 	namespaceName := strings.ToLower(fmt.Sprintf("%s-%s", input.Name, nameSuffix))
 	networkPolicyName := strings.ToLower(fmt.Sprintf("%s-%s", input.Name, nameSuffix))
 
 	namespaceLabels := map[string]string{
 		"name":         namespaceName,
-		"owner":        username,
+		"created":      username,
 		"project-name": input.Name,
 	}
 	networkPolicyLabels := map[string]string{
 		"name":         networkPolicyName,
-		"owner":        username,
+		"created":      username,
 		"project-name": input.Name,
 	}
 
-	clientset, err := k8s.ConnectCluster()
+	clientset, _, err := k8s.ConnectCluster()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -126,7 +126,7 @@ func DeleteProject(c *gin.Context) {
 		return
 	}
 
-	clientset, err := k8s.ConnectCluster()
+	clientset, _, err := k8s.ConnectCluster()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -136,7 +136,7 @@ func DeleteProject(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	err = k8s.DeleteNaspace(clientset, p.Namespace)
+	err = k8s.DeleteNamespace(clientset, p.Namespace)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

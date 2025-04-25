@@ -8,7 +8,7 @@ type Project struct {
 	Owner         string
 	Namespace     string
 	NetworkPolicy string
-	Deployments   []Deployment `gorm:"foreignKey:ProjectName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Deployments   []Deployment `gorm:"foreignKey:ProjectName;references:Name;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 func (p *Project) SaveProject() (*Project, error) {

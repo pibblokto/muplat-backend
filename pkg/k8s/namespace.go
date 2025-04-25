@@ -41,7 +41,7 @@ func ApplyNamespace(clientset *kubernetes.Clientset, ns *v1.Namespace) error {
 	return nil
 }
 
-func DeleteNaspace(clientset *kubernetes.Clientset, ns string) error {
+func DeleteNamespace(clientset *kubernetes.Clientset, ns string) error {
 	namespace, _ := clientset.CoreV1().Namespaces().Get(context.Background(), ns, metav1.GetOptions{})
 	if namespace.Name != ns {
 		return nil
