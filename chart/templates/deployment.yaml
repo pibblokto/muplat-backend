@@ -34,7 +34,7 @@ spec:
             - name: INIT_USER_PASSWORD
               value: "secretpassword"
             - name: JWT_LIFESPAN_MINUTES
-              value: "25"
+              value: "50"
             - name: JWT_SECRET
               value: "jwtsupersecretpioakdwodi8ajd"
             - name: INGRESS_NGINX_NAMESPACE

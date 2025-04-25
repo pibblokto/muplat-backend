@@ -48,7 +48,7 @@ func CreateProject(c *gin.Context) {
 		"project-name": input.Name,
 	}
 
-	clientset, err := k8s.ConnectCluster()
+	clientset, _, err := k8s.ConnectCluster()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -126,7 +126,7 @@ func DeleteProject(c *gin.Context) {
 		return
 	}
 
-	clientset, err := k8s.ConnectCluster()
+	clientset, _, err := k8s.ConnectCluster()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

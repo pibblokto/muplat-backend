@@ -15,7 +15,7 @@ type appTier struct {
 }
 
 var (
-	appTiers map[string]appTier = map[string]appTier{
+	appTiers = map[string]appTier{
 		"dev": {
 			Replicas: 1,
 		},
@@ -67,7 +67,7 @@ func CreateDeploymentObject(
 							Image: fmt.Sprintf("%s:%s", repository, tag),
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          name,
+									Name:          GetPortName(name),
 									ContainerPort: int32(port),
 								},
 							},

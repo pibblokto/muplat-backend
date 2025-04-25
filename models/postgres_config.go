@@ -4,9 +4,8 @@ type PostgresConfig struct {
 	DeploymentName    string `gorm:"primarykey; not null"`
 	ProjectName       string `gorm:"primarykey; not null"`
 	DiskSize          string
-	Endpoint          string
+	InternalEndpoint  string
 	Database          string
-	Tier              string
 	CredentialsSecret string
 }
 

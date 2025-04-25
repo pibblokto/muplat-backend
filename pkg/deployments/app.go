@@ -59,6 +59,15 @@ func CreateAppDeployment(
 	)
 	err := k8s.ApplyDeployment(clientset, deploymentObject)
 	if err != nil {
+		deleteError := DeleteAppDeployment(
+			clientset,
+			deploymentName,
+			projectName,
+			projectNamespace,
+		)
+		if deleteError != nil {
+			return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
+		}
 		return "", err
 	}
 
@@ -72,7 +81,17 @@ func CreateAppDeployment(
 		ac.Port,
 	)
 	err = k8s.ApplyService(clientset, serviceObject)
+
 	if err != nil {
+		deleteError := DeleteAppDeployment(
+			clientset,
+			deploymentName,
+			projectName,
+			projectNamespace,
+		)
+		if deleteError != nil {
+			return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
+		}
 		return "", err
 	}
 
@@ -90,6 +109,15 @@ func CreateAppDeployment(
 		)
 		err = k8s.ApplyIngress(clientset, ingressObject)
 		if err != nil {
+			deleteError := DeleteAppDeployment(
+				clientset,
+				deploymentName,
+				projectName,
+				projectNamespace,
+			)
+			if deleteError != nil {
+				return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
+			}
 			return "", err
 		}
 	}
@@ -110,17 +138,17 @@ func DeleteAppDeployment(
 		return err
 	}
 
-	err = k8s.DeleteService(clientset, resourceName, projectName)
+	err = k8s.DeleteService(clientset, resourceName, projectNamespace)
 	if err != nil {
 		return err
 	}
 
-	err = k8s.DeleteDeployment(clientset, resourceName, projectName)
+	err = k8s.DeleteDeployment(clientset, resourceName, projectNamespace)
 	if err != nil {
 		return err
 	}
 
-	err = k8s.DeleteSecret(clientset, resourceName, projectName)
+	err = k8s.DeleteSecret(clientset, resourceName, projectNamespace)
 	if err != nil {
 		return err
 	}

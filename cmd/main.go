@@ -38,7 +38,7 @@ func main() {
 	deployments.Use(middlewares.JwtAuth())
 
 	deployments.POST("", controllers.CreateDeployment)
-	deployments.POST("", controllers.DeleteDeployment)
+	deployments.DELETE("", controllers.DeleteDeployment)
 
 	r.Run(":8080")
 }

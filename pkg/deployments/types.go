@@ -4,13 +4,20 @@ import "fmt"
 
 type DeploymentType string
 type AppTier string
+type PostgresTier string
 
 var (
+	// deployment types
 	TypeApp      DeploymentType = "app"
 	TypePostgres DeploymentType = "postgres"
-	AppTierDev   AppTier        = "dev"
-	AppTierMid   AppTier        = "mid"
-	AppTierPro   AppTier        = "pro"
+	// app tier
+	AppTierDev AppTier = "dev"
+	AppTierMid AppTier = "mid"
+	AppTierPro AppTier = "pro"
+	// postgres tier
+	PostgresTierDev AppTier = "dev"
+	PostgresTierMid AppTier = "mid"
+	PostgresTierPro AppTier = "pro"
 )
 
 func (dt DeploymentType) IsValid() bool {
@@ -60,4 +67,9 @@ type AppConfig struct {
 	Tier       AppTier           `json:"tier" binding:"required"`
 	Port       uint              `json:"port" binding:"required"`
 	EnvVars    map[string]string `json:"envVars"`
+}
+
+type PostgresConfig struct {
+	DiskSize uint    `json:"diskSize" binding:"required"`
+	Database *string `json:"database"`
 }
