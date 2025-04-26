@@ -1,15 +1,18 @@
-package deployments
+package services
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/muplat/muplat-backend/pkg/k8s"
-	"github.com/muplat/muplat-backend/pkg/setup"
+	"github.com/muplat/muplat-backend/repositories"
 	"k8s.io/client-go/kubernetes"
 )
 
-var cfg setup.GlobalConfig = setup.LoadConfig()
+type AppService struct {
+	Db  *repositories.DatabaseConfig
+	K8s *k8s.ClusterConfig
+}
 
 func CreateAppDeployment(
 	clientset *kubernetes.Clientset,

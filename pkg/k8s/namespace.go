@@ -8,10 +8,9 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
-func CreateNamespaceObject(
+func (c *ClusterConfig) CreateNamespaceObject(
 	name string,
 	labels map[string]string,
 	annotations map[string]string,
@@ -25,15 +24,15 @@ func CreateNamespaceObject(
 	}
 }
 
-func ApplyNamespace(clientset *kubernetes.Clientset, ns *v1.Namespace) error {
-	namespace, _ := clientset.CoreV1().Namespaces().Get(context.Background(), ns.Name, metav1.GetOptions{})
+func (c *ClusterConfig) ApplyNamespace(ns *v1.Namespace) error {
+	namespace, _ := c.Clientset.CoreV1().Namespaces().Get(context.Background(), ns.Name, metav1.GetOptions{})
 	if namespace.Name != ns.Name {
-		_, err := clientset.CoreV1().Namespaces().Create(context.Background(), ns, metav1.CreateOptions{})
+		_, err := c.Clientset.CoreV1().Namespaces().Create(context.Background(), ns, metav1.CreateOptions{})
 		if err != nil {
 			return err
 		}
 	} else {
-		_, err := clientset.CoreV1().Namespaces().Update(context.Background(), ns, metav1.UpdateOptions{})
+		_, err := c.Clientset.CoreV1().Namespaces().Update(context.Background(), ns, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -41,12 +40,12 @@ func ApplyNamespace(clientset *kubernetes.Clientset, ns *v1.Namespace) error {
 	return nil
 }
 
-func DeleteNamespace(clientset *kubernetes.Clientset, ns string) error {
-	namespace, _ := clientset.CoreV1().Namespaces().Get(context.Background(), ns, metav1.GetOptions{})
+func (c *ClusterConfig) DeleteNamespace(ns string) error {
+	namespace, _ := c.Clientset.CoreV1().Namespaces().Get(context.Background(), ns, metav1.GetOptions{})
 	if namespace.Name != ns {
 		return nil
 	}
-	err := clientset.CoreV1().Namespaces().Delete(context.Background(), ns, metav1.DeleteOptions{})
+	err := c.Clientset.CoreV1().Namespaces().Delete(context.Background(), ns, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}

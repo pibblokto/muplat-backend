@@ -1,6 +1,13 @@
 package controllers
 
-import "github.com/muplat/muplat-backend/pkg/deployments"
+import (
+	"github.com/muplat/muplat-backend/pkg/deployments"
+	"github.com/muplat/muplat-backend/services"
+)
+
+type HttpHandler struct {
+	AppService *services.AppService
+}
 
 type CreateDeploymentInput struct {
 	Name           string                      `json:"name" binding:"required"`

@@ -12,7 +12,7 @@ import (
 	"github.com/muplat/muplat-backend/pkg/setup"
 )
 
-var cfg setup.MuplatCfg = setup.LoadConfig()
+var cfg setup.GlobalConfig = setup.LoadConfig()
 
 type ProjectInput struct {
 	Name string `json:"name" binding:"required"`

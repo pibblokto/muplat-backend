@@ -6,10 +6,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/client-go/kubernetes"
 )
 
-func CreateServiceObject(
+func (c *ClusterConfig) CreateServiceObject(
 	name string,
 	namespace string,
 	labels map[string]string,
@@ -42,15 +41,15 @@ func CreateServiceObject(
 	}
 }
 
-func ApplyService(clientset *kubernetes.Clientset, s *v1.Service) error {
-	service, _ := clientset.CoreV1().Services(s.Namespace).Get(context.Background(), s.Name, metav1.GetOptions{})
+func (c *ClusterConfig) ApplyService(s *v1.Service) error {
+	service, _ := c.Clientset.CoreV1().Services(s.Namespace).Get(context.Background(), s.Name, metav1.GetOptions{})
 	if service.Name != s.Name {
-		_, err := clientset.CoreV1().Services(s.Namespace).Create(context.Background(), s, metav1.CreateOptions{})
+		_, err := c.Clientset.CoreV1().Services(s.Namespace).Create(context.Background(), s, metav1.CreateOptions{})
 		if err != nil {
 			return err
 		}
 	} else {
-		_, err := clientset.CoreV1().Services(s.Namespace).Update(context.Background(), s, metav1.UpdateOptions{})
+		_, err := c.Clientset.CoreV1().Services(s.Namespace).Update(context.Background(), s, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -58,12 +57,12 @@ func ApplyService(clientset *kubernetes.Clientset, s *v1.Service) error {
 	return nil
 }
 
-func DeleteService(clientset *kubernetes.Clientset, sName string, sNamespace string) error {
-	service, _ := clientset.CoreV1().Services(sNamespace).Get(context.Background(), sName, metav1.GetOptions{})
+func (c *ClusterConfig) DeleteService(sName string, sNamespace string) error {
+	service, _ := c.Clientset.CoreV1().Services(sNamespace).Get(context.Background(), sName, metav1.GetOptions{})
 	if service.Name != sName {
 		return nil
 	}
-	err := clientset.CoreV1().Services(sNamespace).Delete(context.Background(), sName, metav1.DeleteOptions{})
+	err := c.Clientset.CoreV1().Services(sNamespace).Delete(context.Background(), sName, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}

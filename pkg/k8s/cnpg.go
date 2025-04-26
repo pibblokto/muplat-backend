@@ -8,10 +8,9 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/dynamic"
 )
 
-func CreatePostgresClusterObject(
+func (c *ClusterConfig) CreatePostgresClusterObject(
 	name string,
 	namespace string,
 	database string,
@@ -46,19 +45,19 @@ func CreatePostgresClusterObject(
 	}
 }
 
-func ApplyPostgresCluster(client *dynamic.DynamicClient, pc *unstructured.Unstructured) error {
+func (c *ClusterConfig) ApplyPostgresCluster(pc *unstructured.Unstructured) error {
 	pcName := pc.GetName()
 	pcNamespace := pc.GetNamespace()
 	gvr := schema.GroupVersionResource{Group: "postgresql.cnpg.io", Version: "v1", Resource: "clusters"}
-	postgresCluster, _ := client.Resource(gvr).Namespace(pcNamespace).Get(context.Background(), pcName, v1.GetOptions{})
+	postgresCluster, _ := c.Client.Resource(gvr).Namespace(pcNamespace).Get(context.Background(), pcName, v1.GetOptions{})
 
 	if postgresCluster == nil {
-		_, err := client.Resource(gvr).Namespace(pcNamespace).Create(context.Background(), pc, v1.CreateOptions{})
+		_, err := c.Client.Resource(gvr).Namespace(pcNamespace).Create(context.Background(), pc, v1.CreateOptions{})
 		if err != nil {
 			return err
 		}
 	} else if postgresCluster.GetName() != pcName {
-		_, err := client.Resource(gvr).Namespace(pcNamespace).Update(context.Background(), pc, v1.UpdateOptions{})
+		_, err := c.Client.Resource(gvr).Namespace(pcNamespace).Update(context.Background(), pc, v1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -66,14 +65,14 @@ func ApplyPostgresCluster(client *dynamic.DynamicClient, pc *unstructured.Unstru
 	return nil
 }
 
-func DeletePostgresCluster(client *dynamic.DynamicClient, pcName, pcNamespace string) error {
+func (c *ClusterConfig) DeletePostgresCluster(pcName, pcNamespace string) error {
 	gvr := schema.GroupVersionResource{Group: "postgresql.cnpg.io", Version: "v1", Resource: "clusters"}
-	postgresCluster, _ := client.Resource(gvr).Namespace(pcNamespace).Get(context.Background(), pcName, v1.GetOptions{})
+	postgresCluster, _ := c.Client.Resource(gvr).Namespace(pcNamespace).Get(context.Background(), pcName, v1.GetOptions{})
 
 	if postgresCluster == nil {
 		return nil
 	}
-	err := client.Resource(gvr).Namespace(pcNamespace).Delete(context.Background(), pcName, v1.DeleteOptions{})
+	err := c.Client.Resource(gvr).Namespace(pcNamespace).Delete(context.Background(), pcName, v1.DeleteOptions{})
 	if err != nil {
 		return err
 	}

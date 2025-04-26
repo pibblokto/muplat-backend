@@ -8,11 +8,3 @@ type PostgresConfig struct {
 	Database          string
 	CredentialsSecret string
 }
-
-func (pc *PostgresConfig) SavePostgresConfig() (*PostgresConfig, error) {
-	err := db.Create(pc).Error
-	if err != nil {
-		return &PostgresConfig{}, err
-	}
-	return pc, nil
-}
