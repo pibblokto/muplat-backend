@@ -35,7 +35,7 @@ func (c *ClusterConnection) CreateNetworkPolicyObject(
 						{
 							NamespaceSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
-									"name": c.ingressNamespace,
+									"name": c.IngressNamespace,
 								},
 							},
 						},

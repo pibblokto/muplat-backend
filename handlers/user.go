@@ -15,7 +15,7 @@ func (h *HttpHandler) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := user.CreateSession(input.Username, input.Password, h.Jwt)
+	token, err := user.CreateSession(input.Username, input.Password, h.Db, h.Jwt)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

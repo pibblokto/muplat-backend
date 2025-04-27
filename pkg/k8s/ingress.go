@@ -28,7 +28,7 @@ func (c *ClusterConnection) CreateIngressObject(
 			Annotations: annotations,
 		},
 		Spec: v1.IngressSpec{
-			IngressClassName: &c.ingressClassName,
+			IngressClassName: &c.IngressClassName,
 			Rules: []v1.IngressRule{
 				{
 					Host: domainName,

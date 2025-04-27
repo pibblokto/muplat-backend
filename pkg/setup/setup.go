@@ -15,9 +15,9 @@ type GlobalConfig struct {
 
 func InitGlobalConfig() *GlobalConfig {
 	globalConf := &GlobalConfig{}
-	globalConf.Db = &repositories.Database{}
-	globalConf.ClusterConn = &k8s.ClusterConnection{}
-	globalConf.Jwt = &jwt.JwtConfig{}
+	globalConf.Db = repositories.NewDatabase()
+	globalConf.ClusterConn = k8s.NewClusterConnection()
+	globalConf.Jwt = jwt.NewJwtConfig()
 
 	return globalConf
 }

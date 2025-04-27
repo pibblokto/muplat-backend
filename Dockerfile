@@ -16,7 +16,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -ldflags="-s -w" -o /app/muplat ./cmd/main.go
+RUN go build -ldflags="-s -w" -o /app/muplat ./cmd/
 
 FROM alpine
 

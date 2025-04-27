@@ -84,9 +84,9 @@ func (j *JwtConfig) ExtractTokenUsername(c *gin.Context) (string, error) {
 	return username, nil
 }
 
-func (j *JwtConfig) LoginCheck(username string, password string) (string, error) {
+func (j *JwtConfig) LoginCheck(username, hashedPassword, password string) (string, error) {
 
-	err := bcrypt.CompareHashAndPassword([]byte(username), []byte(password))
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {
 		return "", err
 	}

@@ -7,8 +7,14 @@ import (
 	"github.com/muplat/muplat-backend/repositories"
 )
 
-func CreateSession(username, password string, j *jwt.JwtConfig) (string, error) {
-	token, err := j.LoginCheck(username, password)
+func CreateSession(username, password string, db *repositories.Database, j *jwt.JwtConfig) (string, error) {
+
+	u, err := db.GetUserByUsername(username)
+	if err != nil {
+		return "", err
+	}
+
+	token, err := j.LoginCheck(username, u.Password, password)
 	if err != nil {
 		return "", err
 	}

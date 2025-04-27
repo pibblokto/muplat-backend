@@ -12,7 +12,8 @@ type JwtConfig struct {
 }
 
 func NewJwtConfig() (j *JwtConfig) {
-	err := env.Parse(&j)
+	j = &JwtConfig{}
+	err := env.Parse(j)
 	if err != nil {
 		log.Fatalf("Jwt config initialization error: %v", err)
 	}
