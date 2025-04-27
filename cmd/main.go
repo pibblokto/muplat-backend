@@ -1,44 +1,23 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
-	"github.com/muplat/muplat-backend/controllers"
-	"github.com/muplat/muplat-backend/middlewares"
-	"github.com/muplat/muplat-backend/models"
+	"github.com/muplat/muplat-backend/handlers"
+	"github.com/muplat/muplat-backend/pkg/setup"
 )
 
 func main() {
-	models.ConnectDatabase()
-	models.CreateInitUser()
+	log.Println("Starting servcer...")
+	globalConf := setup.InitGlobalConfig()
+	httpHandler := handlers.NewHttpHandler(globalConf.Db, globalConf.ClusterConn, globalConf.Jwt)
 
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.RedirectTrailingSlash = true
 
-	// public
-	public := r.Group("/api")
-	public.POST("/auth/login", controllers.Login)
-
-	// projects
-	projects := r.Group("/api/project")
-	projects.Use(middlewares.JwtAuth())
-
-	projects.POST("", controllers.CreateProject)
-	projects.DELETE("", controllers.DeleteProject)
-
-	// users
-	users := r.Group("/api/auth")
-	users.Use(middlewares.JwtAuth())
-
-	users.POST("/user", controllers.AddUser)
-	users.DELETE("/user", controllers.DeleteUser)
-
-	// deployments
-	deployments := r.Group("/api/deployment")
-	deployments.Use(middlewares.JwtAuth())
-
-	deployments.POST("", controllers.CreateDeployment)
-	deployments.DELETE("", controllers.DeleteDeployment)
+	DeclareRoutes(r, httpHandler)
 
 	r.Run(":8080")
 }

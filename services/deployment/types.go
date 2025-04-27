@@ -1,4 +1,4 @@
-package deployments
+package deployment
 
 import "fmt"
 
@@ -14,10 +14,6 @@ var (
 	AppTierDev AppTier = "dev"
 	AppTierMid AppTier = "mid"
 	AppTierPro AppTier = "pro"
-	// postgres tier
-	PostgresTierDev AppTier = "dev"
-	PostgresTierMid AppTier = "mid"
-	PostgresTierPro AppTier = "pro"
 )
 
 func (dt DeploymentType) IsValid() bool {
@@ -58,7 +54,6 @@ func (dt *DeploymentType) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// structs
 type AppConfig struct {
 	Repository string            `json:"repository" binding:"required"`
 	Tag        string            `json:"tag" binding:"required"`

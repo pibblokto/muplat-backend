@@ -9,14 +9,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	jwt "github.com/golang-jwt/jwt/v5"
-	"github.com/muplat/muplat-backend/pkg/setup"
+	"golang.org/x/crypto/bcrypt"
 )
 
-var cfg setup.MuplatCfg = setup.LoadConfig()
-
-func GenerateToken(username string) (string, error) {
-	lifespanMinutes, err := strconv.Atoi(cfg.JwtLifespanMinutes)
-	jwtSecret := cfg.JwtSecret
+func (j *JwtConfig) GenerateToken(username string) (string, error) {
+	lifespanMinutes, err := strconv.Atoi(j.JwtLifespanMinutes)
+	jwtSecret := j.JwtSecret
 
 	if err != nil {
 		return "", nil
@@ -31,9 +29,9 @@ func GenerateToken(username string) (string, error) {
 	return token.SignedString([]byte(jwtSecret))
 }
 
-func TokenValid(c *gin.Context) bool {
-	jwtSecret := cfg.JwtSecret
-	tokenString := ExtractToken(c)
+func (j *JwtConfig) TokenValid(c *gin.Context) bool {
+	jwtSecret := j.JwtSecret
+	tokenString := j.ExtractToken(c)
 	_, err := jwt.Parse(
 		tokenString,
 		func(token *jwt.Token) (interface{}, error) {
@@ -48,7 +46,7 @@ func TokenValid(c *gin.Context) bool {
 	return true
 }
 
-func ExtractToken(c *gin.Context) string {
+func (j *JwtConfig) ExtractToken(c *gin.Context) string {
 	token := c.Query("token")
 	if token != "" {
 		return token
@@ -61,9 +59,9 @@ func ExtractToken(c *gin.Context) string {
 	return ""
 }
 
-func ExtractTokenUsername(c *gin.Context) (string, error) {
-	tokenString := ExtractToken(c)
-	jwtSecret := cfg.JwtSecret
+func (j *JwtConfig) ExtractTokenUsername(c *gin.Context) (string, error) {
+	tokenString := j.ExtractToken(c)
+	jwtSecret := j.JwtSecret
 
 	token, err := jwt.Parse(
 		tokenString,
@@ -84,4 +82,20 @@ func ExtractTokenUsername(c *gin.Context) (string, error) {
 		return "", errors.New("failed to cast claims[\"username\"] to string")
 	}
 	return username, nil
+}
+
+func (j *JwtConfig) LoginCheck(username, hashedPassword, password string) (string, error) {
+
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	if err != nil {
+		return "", err
+	}
+
+	token, err := j.GenerateToken(username)
+
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }

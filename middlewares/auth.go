@@ -7,9 +7,9 @@ import (
 	"github.com/muplat/muplat-backend/pkg/jwt"
 )
 
-func JwtAuth() gin.HandlerFunc {
+func JwtAuth(j *jwt.JwtConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if !jwt.TokenValid(c) {
+		if !j.TokenValid(c) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid bearer token"})
 			c.Abort()
 			return

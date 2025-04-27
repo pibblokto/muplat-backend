@@ -8,15 +8,13 @@ import (
 
 	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
-func CreateNetworkPolicyObject(
+func (c *ClusterConnection) CreateNetworkPolicyObject(
 	name string,
 	namespace string,
 	labels map[string]string,
 	annotations map[string]string,
-	ingressNamespaceName string,
 ) *v1.NetworkPolicy {
 	return &v1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
@@ -37,7 +35,7 @@ func CreateNetworkPolicyObject(
 						{
 							NamespaceSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
-									"name": ingressNamespaceName,
+									"name": c.IngressNamespace,
 								},
 							},
 						},
@@ -59,15 +57,15 @@ func CreateNetworkPolicyObject(
 	}
 }
 
-func ApplyNetworkPolicy(clientset *kubernetes.Clientset, np *v1.NetworkPolicy) error {
-	networkPolicy, _ := clientset.NetworkingV1().NetworkPolicies(np.Namespace).Get(context.Background(), np.Name, metav1.GetOptions{})
+func (c *ClusterConnection) ApplyNetworkPolicy(np *v1.NetworkPolicy) error {
+	networkPolicy, _ := c.Clientset.NetworkingV1().NetworkPolicies(np.Namespace).Get(context.Background(), np.Name, metav1.GetOptions{})
 	if networkPolicy.Name != np.Name {
-		_, err := clientset.NetworkingV1().NetworkPolicies(np.Namespace).Create(context.Background(), np, metav1.CreateOptions{})
+		_, err := c.Clientset.NetworkingV1().NetworkPolicies(np.Namespace).Create(context.Background(), np, metav1.CreateOptions{})
 		if err != nil {
 			return err
 		}
 	} else {
-		_, err := clientset.NetworkingV1().NetworkPolicies(np.Namespace).Update(context.Background(), np, metav1.UpdateOptions{})
+		_, err := c.Clientset.NetworkingV1().NetworkPolicies(np.Namespace).Update(context.Background(), np, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -75,12 +73,12 @@ func ApplyNetworkPolicy(clientset *kubernetes.Clientset, np *v1.NetworkPolicy) e
 	return nil
 }
 
-func DeleteNetworkPolicy(clientset *kubernetes.Clientset, npName string, npNamespace string) error {
-	networkPolicy, _ := clientset.NetworkingV1().NetworkPolicies(npNamespace).Get(context.Background(), npName, metav1.GetOptions{})
+func (c *ClusterConnection) DeleteNetworkPolicy(npName string, npNamespace string) error {
+	networkPolicy, _ := c.Clientset.NetworkingV1().NetworkPolicies(npNamespace).Get(context.Background(), npName, metav1.GetOptions{})
 	if networkPolicy.Name != npName {
 		return nil
 	}
-	err := clientset.NetworkingV1().NetworkPolicies(npNamespace).Delete(context.Background(), npName, metav1.DeleteOptions{})
+	err := c.Clientset.NetworkingV1().NetworkPolicies(npNamespace).Delete(context.Background(), npName, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}

@@ -5,10 +5,9 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
-func CreateSecretObject(
+func (c *ClusterConnection) CreateSecretObject(
 	name string,
 	namespace string,
 	labels map[string]string,
@@ -31,15 +30,15 @@ func CreateSecretObject(
 	return secret
 }
 
-func ApplySecret(clientset *kubernetes.Clientset, s *v1.Secret) error {
-	secret, _ := clientset.CoreV1().Secrets(s.Namespace).Get(context.Background(), s.Name, metav1.GetOptions{})
+func (c *ClusterConnection) ApplySecret(s *v1.Secret) error {
+	secret, _ := c.Clientset.CoreV1().Secrets(s.Namespace).Get(context.Background(), s.Name, metav1.GetOptions{})
 	if secret.Name != s.Name {
-		_, err := clientset.CoreV1().Secrets(s.Namespace).Create(context.Background(), s, metav1.CreateOptions{})
+		_, err := c.Clientset.CoreV1().Secrets(s.Namespace).Create(context.Background(), s, metav1.CreateOptions{})
 		if err != nil {
 			return err
 		}
 	} else {
-		_, err := clientset.CoreV1().Secrets(s.Namespace).Update(context.Background(), s, metav1.UpdateOptions{})
+		_, err := c.Clientset.CoreV1().Secrets(s.Namespace).Update(context.Background(), s, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -47,12 +46,12 @@ func ApplySecret(clientset *kubernetes.Clientset, s *v1.Secret) error {
 	return nil
 }
 
-func DeleteSecret(clientset *kubernetes.Clientset, sName string, sNamespace string) error {
-	secret, _ := clientset.CoreV1().Secrets(sNamespace).Get(context.Background(), sName, metav1.GetOptions{})
+func (c *ClusterConnection) DeleteSecret(sName string, sNamespace string) error {
+	secret, _ := c.Clientset.CoreV1().Secrets(sNamespace).Get(context.Background(), sName, metav1.GetOptions{})
 	if secret.Name != sName {
 		return nil
 	}
-	err := clientset.CoreV1().Secrets(sNamespace).Delete(context.Background(), sName, metav1.DeleteOptions{})
+	err := c.Clientset.CoreV1().Secrets(sNamespace).Delete(context.Background(), sName, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}

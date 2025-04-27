@@ -8,15 +8,13 @@ import (
 
 	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
-func CreateIngressObject(
+func (c *ClusterConnection) CreateIngressObject(
 	name string,
 	namespace string,
 	labels map[string]string,
 	annotations map[string]string,
-	ingressClassName string,
 	domainName string,
 	serviceName string,
 	servicePort uint,
@@ -30,7 +28,7 @@ func CreateIngressObject(
 			Annotations: annotations,
 		},
 		Spec: v1.IngressSpec{
-			IngressClassName: &ingressClassName,
+			IngressClassName: &c.IngressClassName,
 			Rules: []v1.IngressRule{
 				{
 					Host: domainName,
@@ -59,15 +57,15 @@ func CreateIngressObject(
 	return ingress
 }
 
-func ApplyIngress(clientset *kubernetes.Clientset, i *v1.Ingress) error {
-	ingress, _ := clientset.NetworkingV1().Ingresses(i.Namespace).Get(context.Background(), i.Name, metav1.GetOptions{})
+func (c *ClusterConnection) ApplyIngress(i *v1.Ingress) error {
+	ingress, _ := c.Clientset.NetworkingV1().Ingresses(i.Namespace).Get(context.Background(), i.Name, metav1.GetOptions{})
 	if ingress.Name != i.Name {
-		_, err := clientset.NetworkingV1().Ingresses(i.Namespace).Create(context.Background(), i, metav1.CreateOptions{})
+		_, err := c.Clientset.NetworkingV1().Ingresses(i.Namespace).Create(context.Background(), i, metav1.CreateOptions{})
 		if err != nil {
 			return err
 		}
 	} else {
-		_, err := clientset.NetworkingV1().Ingresses(i.Namespace).Update(context.Background(), i, metav1.UpdateOptions{})
+		_, err := c.Clientset.NetworkingV1().Ingresses(i.Namespace).Update(context.Background(), i, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -75,12 +73,12 @@ func ApplyIngress(clientset *kubernetes.Clientset, i *v1.Ingress) error {
 	return nil
 }
 
-func DeleteIngress(clientset *kubernetes.Clientset, iName string, iNamespace string) error {
-	ingress, _ := clientset.NetworkingV1().Ingresses(iNamespace).Get(context.Background(), iName, metav1.GetOptions{})
+func (c *ClusterConnection) DeleteIngress(iName string, iNamespace string) error {
+	ingress, _ := c.Clientset.NetworkingV1().Ingresses(iNamespace).Get(context.Background(), iName, metav1.GetOptions{})
 	if ingress.Name != iName {
 		return nil
 	}
-	err := clientset.NetworkingV1().Ingresses(iNamespace).Delete(context.Background(), iName, metav1.DeleteOptions{})
+	err := c.Clientset.NetworkingV1().Ingresses(iNamespace).Delete(context.Background(), iName, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}

@@ -7,39 +7,19 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
-type appTier struct {
-	Replicas int32
-}
-
-var (
-	appTiers = map[string]appTier{
-		"dev": {
-			Replicas: 1,
-		},
-		"mid": {
-			Replicas: 2,
-		},
-		"pro": {
-			Replicas: 5,
-		},
-	}
-)
-
-func CreateDeploymentObject(
+func (c *ClusterConnection) CreateDeploymentObject(
 	name string,
 	namespace string,
 	labels map[string]string,
 	annotations map[string]string,
-	tier string,
 	repository string,
 	tag string,
 	port uint,
 	envSecretName string,
+	replicas int32,
 ) *v1.Deployment {
-	replicas := appTiers[tier].Replicas
 	deployment := &v1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        name,
@@ -92,15 +72,15 @@ func CreateDeploymentObject(
 	return deployment
 }
 
-func ApplyDeployment(clientset *kubernetes.Clientset, d *v1.Deployment) error {
-	deployment, _ := clientset.AppsV1().Deployments(d.Namespace).Get(context.Background(), d.Name, metav1.GetOptions{})
+func (c *ClusterConnection) ApplyDeployment(d *v1.Deployment) error {
+	deployment, _ := c.Clientset.AppsV1().Deployments(d.Namespace).Get(context.Background(), d.Name, metav1.GetOptions{})
 	if deployment.Name != d.Name {
-		_, err := clientset.AppsV1().Deployments(d.Namespace).Create(context.Background(), d, metav1.CreateOptions{})
+		_, err := c.Clientset.AppsV1().Deployments(d.Namespace).Create(context.Background(), d, metav1.CreateOptions{})
 		if err != nil {
 			return err
 		}
 	} else {
-		_, err := clientset.AppsV1().Deployments(d.Namespace).Update(context.Background(), d, metav1.UpdateOptions{})
+		_, err := c.Clientset.AppsV1().Deployments(d.Namespace).Update(context.Background(), d, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -108,12 +88,12 @@ func ApplyDeployment(clientset *kubernetes.Clientset, d *v1.Deployment) error {
 	return nil
 }
 
-func DeleteDeployment(clientset *kubernetes.Clientset, dName string, dNamespace string) error {
-	deployment, _ := clientset.AppsV1().Deployments(dNamespace).Get(context.Background(), dName, metav1.GetOptions{})
+func (c *ClusterConnection) DeleteDeployment(dName string, dNamespace string) error {
+	deployment, _ := c.Clientset.AppsV1().Deployments(dNamespace).Get(context.Background(), dName, metav1.GetOptions{})
 	if deployment.Name != dName {
 		return nil
 	}
-	err := clientset.AppsV1().Deployments(dNamespace).Delete(context.Background(), dName, metav1.DeleteOptions{})
+	err := c.Clientset.AppsV1().Deployments(dNamespace).Delete(context.Background(), dName, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
