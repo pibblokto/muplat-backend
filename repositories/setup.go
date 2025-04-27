@@ -10,18 +10,18 @@ import (
 	"gorm.io/gorm"
 )
 
-type DatabaseConfig struct {
+type Database struct {
 	Connection       *gorm.DB
-	PostgresHost     string `env:"POSTGRES_HOST"`
-	PostgresUser     string `env:"POSTGRES_USER"`
-	PostgresPassword string `env:"POSTGRES_PASSWORD"`
-	PostgresPort     string `env:"POSTGRES_PORT" envDefault:"5432"`
-	Database         string `env:"DATABASE"`
 	InitUser         string `env:"INIT_USER" envDefault:"admin"`
-	InitUserPassword string `env:"INIT_USER_PASSWORD"`
+	postgresHost     string `env:"POSTGRES_HOST"`
+	postgresUser     string `env:"POSTGRES_USER"`
+	postgresPassword string `env:"POSTGRES_PASSWORD"`
+	postgresPort     string `env:"POSTGRES_PORT" envDefault:"5432"`
+	database         string `env:"DATABASE"`
+	initUserPassword string `env:"INIT_USER_PASSWORD"`
 }
 
-func (db *DatabaseConfig) InitDatabase() {
+func NewDatabase() (db *Database) {
 
 	err := env.Parse(db)
 	if err != nil {
@@ -29,11 +29,11 @@ func (db *DatabaseConfig) InitDatabase() {
 	}
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		db.PostgresHost,
-		db.PostgresUser,
-		db.PostgresPassword,
-		db.Database,
-		db.PostgresPort,
+		db.postgresHost,
+		db.postgresUser,
+		db.postgresPassword,
+		db.database,
+		db.postgresPort,
 	)
 	db.Connection, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
@@ -54,12 +54,13 @@ func (db *DatabaseConfig) InitDatabase() {
 	if err != nil {
 		log.Fatalf("Failed to created init user: %v", err)
 	}
+	return db
 }
 
-func (db *DatabaseConfig) initAdminUser() error {
+func (db *Database) initAdminUser() error {
 	var u models.User = models.User{
 		Username: db.InitUser,
-		Password: db.InitUserPassword,
+		Password: db.initUserPassword,
 		Admin:    true,
 	}
 	err := db.Connection.Create(&u).Error

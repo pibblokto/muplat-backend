@@ -10,7 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (c *ClusterConfig) CreateNetworkPolicyObject(
+func (c *ClusterConnection) CreateNetworkPolicyObject(
 	name string,
 	namespace string,
 	labels map[string]string,
@@ -35,7 +35,7 @@ func (c *ClusterConfig) CreateNetworkPolicyObject(
 						{
 							NamespaceSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
-									"name": c.IngressNamespace,
+									"name": c.ingressNamespace,
 								},
 							},
 						},
@@ -57,7 +57,7 @@ func (c *ClusterConfig) CreateNetworkPolicyObject(
 	}
 }
 
-func (c *ClusterConfig) ApplyNetworkPolicy(np *v1.NetworkPolicy) error {
+func (c *ClusterConnection) ApplyNetworkPolicy(np *v1.NetworkPolicy) error {
 	networkPolicy, _ := c.Clientset.NetworkingV1().NetworkPolicies(np.Namespace).Get(context.Background(), np.Name, metav1.GetOptions{})
 	if networkPolicy.Name != np.Name {
 		_, err := c.Clientset.NetworkingV1().NetworkPolicies(np.Namespace).Create(context.Background(), np, metav1.CreateOptions{})
@@ -73,7 +73,7 @@ func (c *ClusterConfig) ApplyNetworkPolicy(np *v1.NetworkPolicy) error {
 	return nil
 }
 
-func (c *ClusterConfig) DeleteNetworkPolicy(npName string, npNamespace string) error {
+func (c *ClusterConnection) DeleteNetworkPolicy(npName string, npNamespace string) error {
 	networkPolicy, _ := c.Clientset.NetworkingV1().NetworkPolicies(npNamespace).Get(context.Background(), npName, metav1.GetOptions{})
 	if networkPolicy.Name != npName {
 		return nil

@@ -9,12 +9,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (c *ClusterConfig) CreateDeploymentObject(
+func (c *ClusterConnection) CreateDeploymentObject(
 	name string,
 	namespace string,
 	labels map[string]string,
 	annotations map[string]string,
-	tier string,
 	repository string,
 	tag string,
 	port uint,
@@ -73,7 +72,7 @@ func (c *ClusterConfig) CreateDeploymentObject(
 	return deployment
 }
 
-func (c *ClusterConfig) ApplyDeployment(d *v1.Deployment) error {
+func (c *ClusterConnection) ApplyDeployment(d *v1.Deployment) error {
 	deployment, _ := c.Clientset.AppsV1().Deployments(d.Namespace).Get(context.Background(), d.Name, metav1.GetOptions{})
 	if deployment.Name != d.Name {
 		_, err := c.Clientset.AppsV1().Deployments(d.Namespace).Create(context.Background(), d, metav1.CreateOptions{})
@@ -89,7 +88,7 @@ func (c *ClusterConfig) ApplyDeployment(d *v1.Deployment) error {
 	return nil
 }
 
-func (c *ClusterConfig) DeleteDeployment(dName string, dNamespace string) error {
+func (c *ClusterConnection) DeleteDeployment(dName string, dNamespace string) error {
 	deployment, _ := c.Clientset.AppsV1().Deployments(dNamespace).Get(context.Background(), dName, metav1.GetOptions{})
 	if deployment.Name != dName {
 		return nil

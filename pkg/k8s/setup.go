@@ -19,16 +19,16 @@ const (
 	InternalConnection ConnectionMode = "internal"
 )
 
-type ClusterConfig struct {
+type ClusterConnection struct {
 	Clientset        *kubernetes.Clientset
 	Client           *dynamic.DynamicClient
-	KubeconfigPath   string         `env:"KUBECONFIG"`
-	IngressNamespace string         `env:"INGRESS_NGINX_NAMESPACE" envDefault:"ingress-nginx"`
-	IngressClassName string         `env:"INGRESS_CLASS_NAME" envDefault:"nginx"`
-	ConnectionMode   ConnectionMode `env:"CONNECTION_MODE" envDefault:"internal"`
+	kubeconfigPath   string         `env:"KUBECONFIG"`
+	ingressNamespace string         `env:"INGRESS_NGINX_NAMESPACE" envDefault:"ingress-nginx"`
+	ingressClassName string         `env:"INGRESS_CLASS_NAME" envDefault:"nginx"`
+	connectionMode   ConnectionMode `env:"CONNECTION_MODE" envDefault:"internal"`
 }
 
-func (c *ClusterConfig) InitClusterConnection() {
+func NewClusterConnection() (c *ClusterConnection) {
 	var config *rest.Config
 	var err error
 
@@ -37,21 +37,21 @@ func (c *ClusterConfig) InitClusterConnection() {
 		log.Fatalf("Cluster connection config initialization error: %v", err)
 	}
 
-	if c.ConnectionMode != InternalConnection && c.ConnectionMode != ExternalConnection {
+	if c.connectionMode != InternalConnection && c.connectionMode != ExternalConnection {
 		log.Fatal("CONNECTION_MODE should be either internal or external")
 	}
 
-	if c.ConnectionMode == "external" && c.KubeconfigPath == "" {
-		log.Fatalf("KUBECONFIG is required if CONNECTION_MODE is \"%s\"", c.ConnectionMode)
+	if c.connectionMode == "external" && c.kubeconfigPath == "" {
+		log.Fatalf("KUBECONFIG is required if CONNECTION_MODE is \"%s\"", c.connectionMode)
 	}
 
-	if c.ConnectionMode == ExternalConnection {
-		config, err = clientcmd.BuildConfigFromFlags("", c.KubeconfigPath)
+	if c.connectionMode == ExternalConnection {
+		config, err = clientcmd.BuildConfigFromFlags("", c.kubeconfigPath)
 		if err != nil {
 			log.Fatalf("Failed to get configuration from kubeconfig: %v", err)
 		}
 
-	} else if c.ConnectionMode == InternalConnection {
+	} else if c.connectionMode == InternalConnection {
 		config, err = rest.InClusterConfig()
 		if err != nil {
 			log.Fatalf("Failed to get configuration for attached ServiceAccount: %v", err)
@@ -70,4 +70,5 @@ func (c *ClusterConfig) InitClusterConnection() {
 
 	c.Clientset = clientset
 	c.Client = dynamicClient
+	return c
 }

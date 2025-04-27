@@ -10,7 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (c *ClusterConfig) CreateIngressObject(
+func (c *ClusterConnection) CreateIngressObject(
 	name string,
 	namespace string,
 	labels map[string]string,
@@ -28,7 +28,7 @@ func (c *ClusterConfig) CreateIngressObject(
 			Annotations: annotations,
 		},
 		Spec: v1.IngressSpec{
-			IngressClassName: &c.IngressClassName,
+			IngressClassName: &c.ingressClassName,
 			Rules: []v1.IngressRule{
 				{
 					Host: domainName,
@@ -57,7 +57,7 @@ func (c *ClusterConfig) CreateIngressObject(
 	return ingress
 }
 
-func (c *ClusterConfig) ApplyIngress(i *v1.Ingress) error {
+func (c *ClusterConnection) ApplyIngress(i *v1.Ingress) error {
 	ingress, _ := c.Clientset.NetworkingV1().Ingresses(i.Namespace).Get(context.Background(), i.Name, metav1.GetOptions{})
 	if ingress.Name != i.Name {
 		_, err := c.Clientset.NetworkingV1().Ingresses(i.Namespace).Create(context.Background(), i, metav1.CreateOptions{})
@@ -73,7 +73,7 @@ func (c *ClusterConfig) ApplyIngress(i *v1.Ingress) error {
 	return nil
 }
 
-func (c *ClusterConfig) DeleteIngress(iName string, iNamespace string) error {
+func (c *ClusterConnection) DeleteIngress(iName string, iNamespace string) error {
 	ingress, _ := c.Clientset.NetworkingV1().Ingresses(iNamespace).Get(context.Background(), iName, metav1.GetOptions{})
 	if ingress.Name != iName {
 		return nil

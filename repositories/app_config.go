@@ -2,7 +2,7 @@ package repositories
 
 import "github.com/muplat/muplat-backend/models"
 
-func (db *DatabaseConfig) SaveAppConfig(
+func (db *Database) SaveAppConfig(
 	deploymentName,
 	projectName,
 	repository,
@@ -31,7 +31,7 @@ func (db *DatabaseConfig) SaveAppConfig(
 	return nil
 }
 
-func (db *DatabaseConfig) DeleteAppConfig(deploymentName, projectName string) error {
+func (db *Database) DeleteAppConfig(deploymentName, projectName string) error {
 	ac := &models.AppConfig{
 		DeploymentName: deploymentName,
 		ProjectName:    projectName,

@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func (c *ClusterConfig) CreatePostgresClusterObject(
+func (c *ClusterConnection) CreatePostgresClusterObject(
 	name string,
 	namespace string,
 	database string,
@@ -45,7 +45,7 @@ func (c *ClusterConfig) CreatePostgresClusterObject(
 	}
 }
 
-func (c *ClusterConfig) ApplyPostgresCluster(pc *unstructured.Unstructured) error {
+func (c *ClusterConnection) ApplyPostgresCluster(pc *unstructured.Unstructured) error {
 	pcName := pc.GetName()
 	pcNamespace := pc.GetNamespace()
 	gvr := schema.GroupVersionResource{Group: "postgresql.cnpg.io", Version: "v1", Resource: "clusters"}
@@ -65,7 +65,7 @@ func (c *ClusterConfig) ApplyPostgresCluster(pc *unstructured.Unstructured) erro
 	return nil
 }
 
-func (c *ClusterConfig) DeletePostgresCluster(pcName, pcNamespace string) error {
+func (c *ClusterConnection) DeletePostgresCluster(pcName, pcNamespace string) error {
 	gvr := schema.GroupVersionResource{Group: "postgresql.cnpg.io", Version: "v1", Resource: "clusters"}
 	postgresCluster, _ := c.Client.Resource(gvr).Namespace(pcNamespace).Get(context.Background(), pcName, v1.GetOptions{})
 

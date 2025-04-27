@@ -2,7 +2,7 @@ package repositories
 
 import "github.com/muplat/muplat-backend/models"
 
-func (db *DatabaseConfig) SaveProject(name, owner, namespace, networkPolicy string) error {
+func (db *Database) SaveProject(name, owner, namespace, networkPolicy string) error {
 	p := &models.Project{
 		Name:          name,
 		Owner:         owner,
@@ -16,7 +16,7 @@ func (db *DatabaseConfig) SaveProject(name, owner, namespace, networkPolicy stri
 	return nil
 }
 
-func (db *DatabaseConfig) GetPorjectByName(name string) (*models.Project, error) {
+func (db *Database) GetPorjectByName(name string) (*models.Project, error) {
 	p := &models.Project{}
 	err := db.Connection.Model(&models.Project{}).Where("name = ?", name).Take(p).Error
 	if err != nil {
@@ -25,7 +25,7 @@ func (db *DatabaseConfig) GetPorjectByName(name string) (*models.Project, error)
 	return p, nil
 }
 
-func (db *DatabaseConfig) DeleteProject(name string) error {
+func (db *Database) DeleteProject(name string) error {
 	p := &models.Project{
 		Name: name,
 	}

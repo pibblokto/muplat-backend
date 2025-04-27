@@ -11,9 +11,10 @@ type JwtConfig struct {
 	JwtSecret          string `env:"JWT_SECRET" envDefault:"1"`
 }
 
-func (j *JwtConfig) InitJwt() {
+func NewJwtConfig() (j *JwtConfig) {
 	err := env.Parse(&j)
 	if err != nil {
 		log.Fatalf("Jwt config initialization error: %v", err)
 	}
+	return j
 }

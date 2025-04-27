@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	jwt "github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (j *JwtConfig) GenerateToken(username string) (string, error) {
@@ -81,4 +82,20 @@ func (j *JwtConfig) ExtractTokenUsername(c *gin.Context) (string, error) {
 		return "", errors.New("failed to cast claims[\"username\"] to string")
 	}
 	return username, nil
+}
+
+func (j *JwtConfig) LoginCheck(username string, password string) (string, error) {
+
+	err := bcrypt.CompareHashAndPassword([]byte(username), []byte(password))
+	if err != nil {
+		return "", err
+	}
+
+	token, err := j.GenerateToken(username)
+
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }

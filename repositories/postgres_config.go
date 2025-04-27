@@ -2,7 +2,7 @@ package repositories
 
 import "github.com/muplat/muplat-backend/models"
 
-func (db *DatabaseConfig) SavePostgresConfig(
+func (db *Database) SavePostgresConfig(
 	deploymentName,
 	projectName,
 	diskSize,
@@ -26,7 +26,7 @@ func (db *DatabaseConfig) SavePostgresConfig(
 	return nil
 }
 
-func (db *DatabaseConfig) DeletePostgresConfig(
+func (db *Database) DeletePostgresConfig(
 	deploymentName,
 	projectName string,
 ) error {

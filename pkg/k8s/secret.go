@@ -7,7 +7,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (c *ClusterConfig) CreateSecretObject(
+func (c *ClusterConnection) CreateSecretObject(
 	name string,
 	namespace string,
 	labels map[string]string,
@@ -30,7 +30,7 @@ func (c *ClusterConfig) CreateSecretObject(
 	return secret
 }
 
-func (c *ClusterConfig) ApplySecret(s *v1.Secret) error {
+func (c *ClusterConnection) ApplySecret(s *v1.Secret) error {
 	secret, _ := c.Clientset.CoreV1().Secrets(s.Namespace).Get(context.Background(), s.Name, metav1.GetOptions{})
 	if secret.Name != s.Name {
 		_, err := c.Clientset.CoreV1().Secrets(s.Namespace).Create(context.Background(), s, metav1.CreateOptions{})
@@ -46,7 +46,7 @@ func (c *ClusterConfig) ApplySecret(s *v1.Secret) error {
 	return nil
 }
 
-func (c *ClusterConfig) DeleteSecret(sName string, sNamespace string) error {
+func (c *ClusterConnection) DeleteSecret(sName string, sNamespace string) error {
 	secret, _ := c.Clientset.CoreV1().Secrets(sNamespace).Get(context.Background(), sName, metav1.GetOptions{})
 	if secret.Name != sName {
 		return nil

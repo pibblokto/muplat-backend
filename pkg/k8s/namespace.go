@@ -10,7 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (c *ClusterConfig) CreateNamespaceObject(
+func (c *ClusterConnection) CreateNamespaceObject(
 	name string,
 	labels map[string]string,
 	annotations map[string]string,
@@ -24,7 +24,7 @@ func (c *ClusterConfig) CreateNamespaceObject(
 	}
 }
 
-func (c *ClusterConfig) ApplyNamespace(ns *v1.Namespace) error {
+func (c *ClusterConnection) ApplyNamespace(ns *v1.Namespace) error {
 	namespace, _ := c.Clientset.CoreV1().Namespaces().Get(context.Background(), ns.Name, metav1.GetOptions{})
 	if namespace.Name != ns.Name {
 		_, err := c.Clientset.CoreV1().Namespaces().Create(context.Background(), ns, metav1.CreateOptions{})
@@ -40,7 +40,7 @@ func (c *ClusterConfig) ApplyNamespace(ns *v1.Namespace) error {
 	return nil
 }
 
-func (c *ClusterConfig) DeleteNamespace(ns string) error {
+func (c *ClusterConnection) DeleteNamespace(ns string) error {
 	namespace, _ := c.Clientset.CoreV1().Namespaces().Get(context.Background(), ns, metav1.GetOptions{})
 	if namespace.Name != ns {
 		return nil
