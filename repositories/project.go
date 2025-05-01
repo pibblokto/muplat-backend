@@ -16,7 +16,7 @@ func (db *Database) SaveProject(name, owner, namespace, networkPolicy string) er
 	return nil
 }
 
-func (db *Database) GetPorjectByName(name string) (*models.Project, error) {
+func (db *Database) GetProjectByName(name string) (*models.Project, error) {
 	p := &models.Project{}
 	err := db.Connection.Model(&models.Project{}).Where("name = ?", name).Take(p).Error
 	if err != nil {
@@ -34,4 +34,26 @@ func (db *Database) DeleteProject(name string) error {
 		return err
 	}
 	return nil
+}
+
+func (db *Database) GetProjectsByOwner(owner string) ([]*models.Project, error) {
+	p := []*models.Project{}
+	err := db.Connection.Model(&models.Project{}).Where("owner = ?", owner).Order("created_at DESC").Find(&p).Error
+
+	if err != nil {
+		return []*models.Project{}, err
+	}
+
+	return p, nil
+}
+
+func (db *Database) GetProjects() ([]*models.Project, error) {
+	p := []*models.Project{}
+	err := db.Connection.Model(&models.Project{}).Order("created_at DESC").Find(&p).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return p, err
 }

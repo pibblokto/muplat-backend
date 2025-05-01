@@ -24,7 +24,7 @@ func CreateAppDeployment(
 	if *ac.External && ac.DomainName == "" {
 		return errors.New("external flag was set but no domain was specified")
 	}
-	p, err := db.GetPorjectByName(projectName)
+	p, err := db.GetProjectByName(projectName)
 	if err != nil {
 		return err
 	}
@@ -176,7 +176,7 @@ func DeleteAppDeployment(
 	nameSuffix := k8s.GetNameSuffix(fmt.Sprintf("%s%s", deploymentName, projectName))
 	resourceName := strings.ToLower(fmt.Sprintf("%s-%s", deploymentName, nameSuffix))
 
-	p, err := db.GetPorjectByName(projectName)
+	p, err := db.GetProjectByName(projectName)
 	if err != nil {
 		return err
 	}

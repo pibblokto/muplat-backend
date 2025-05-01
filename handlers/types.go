@@ -48,3 +48,7 @@ type UserInput struct {
 type UserDeleteInput struct {
 	Username string `json:"username" binding:"required"`
 }
+
+type ProjectInput struct {
+	Name string `json:"name" binding:"required"`
+}

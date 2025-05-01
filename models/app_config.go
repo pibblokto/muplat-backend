@@ -1,8 +1,8 @@
 package models
 
 type AppConfig struct {
-	DeploymentName string `gorm:"primarykey; not null"`
-	ProjectName    string `gorm:"primarykey; not null"`
+	DeploymentName string `gorm:"primarykey; not null; index:aconf"`
+	ProjectName    string `gorm:"primarykey; not null; index:aconf"`
 	Repository     string
 	Tag            string
 	ExternalUrl    string

@@ -45,7 +45,6 @@ func (h *HttpHandler) AddUser(c *gin.Context) {
 		username,
 		*input.Admin,
 		h.Db,
-		h.Jwt,
 	)
 
 	if err != nil {
@@ -68,11 +67,40 @@ func (h *HttpHandler) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	err = user.DeleteUser(input.Username, username, h.Db, h.Jwt)
+	err = user.DeleteUser(input.Username, username, h.Db)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("deleted user %s", input.Username)})
+}
+
+func (h *HttpHandler) GetUser(c *gin.Context) {
+	username := c.Param("username")
+	callerUsername, err := h.Jwt.ExtractTokenUsername(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response, err := user.GetUser(username, callerUsername, h.Db)
+
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *HttpHandler) GetUsers(c *gin.Context) {
+	callerUsername, err := h.Jwt.ExtractTokenUsername(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response, err := user.GetUsers(callerUsername, h.Db)
+	if err != err {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
 }

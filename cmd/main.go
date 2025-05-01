@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	log.Println("Starting servcer...")
+	log.Println("Starting server...")
 	globalConf := setup.InitGlobalConfig()
 	httpHandler := handlers.NewHttpHandler(globalConf.Db, globalConf.ClusterConn, globalConf.Jwt)
 

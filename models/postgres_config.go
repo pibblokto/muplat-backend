@@ -1,8 +1,8 @@
 package models
 
 type PostgresConfig struct {
-	DeploymentName    string `gorm:"primarykey; not null"`
-	ProjectName       string `gorm:"primarykey; not null"`
+	DeploymentName    string `gorm:"primarykey; not null;index:pconf"`
+	ProjectName       string `gorm:"primarykey; not null;index:pconf"`
 	DiskSize          string
 	InternalEndpoint  string
 	Database          string

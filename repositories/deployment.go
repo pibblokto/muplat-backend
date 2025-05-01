@@ -35,3 +35,23 @@ func (db *Database) DeleteDeployment(name, projectName string) error {
 	}
 	return nil
 }
+
+func (db *Database) GetDeployments() ([]*models.Deployment, error) {
+	d := []*models.Deployment{}
+	err := db.Connection.Model(&models.Deployment{}).Order("created_at DESC").Find(&d).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return d, err
+}
+
+func (db *Database) GetDeploymentsByProject(projectName string) ([]*models.Deployment, error) {
+	d := []*models.Deployment{}
+	err := db.Connection.Model(&models.Deployment{}).Where("project_name = ?", projectName).Order("created_at DESC").Find(&d).Error
+	if err != nil {
+		return nil, err
+	}
+	return d, nil
+}
