@@ -5,6 +5,7 @@ import (
 	//v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"context"
+	"fmt"
 
 	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,6 +30,12 @@ func (c *ClusterConnection) CreateIngressObject(
 		},
 		Spec: v1.IngressSpec{
 			IngressClassName: &c.IngressClassName,
+			TLS: []v1.IngressTLS{
+				{
+					Hosts:      []string{domainName},
+					SecretName: fmt.Sprintf("crt-%s", name),
+				},
+			},
 			Rules: []v1.IngressRule{
 				{
 					Host: domainName,

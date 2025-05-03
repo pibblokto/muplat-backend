@@ -17,25 +17,25 @@ func CreateAppDeployment(
 	ac *AppConfig,
 	db *repositories.Database,
 	cc *k8s.ClusterConnection,
-) error {
+) (string, error) {
 	if ac == nil {
-		return errors.New("app config was not provided")
+		return "", errors.New("app config was not provided")
 	}
 	if *ac.External && ac.DomainName == "" {
-		return errors.New("external flag was set but no domain was specified")
+		return "", errors.New("external flag was set but no domain was specified")
 	}
 	p, err := db.GetProjectByName(projectName)
 	if err != nil {
-		return err
+		return "", err
 	}
 	projectNamespace := p.Namespace
 
 	u, err := db.GetUserByUsername(username)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if p.Owner != username && !u.Admin {
-		return errors.New("user lacks permissions to create deployment")
+		return "", errors.New("user lacks permissions to create deployment")
 	}
 
 	nameSuffix := k8s.GetNameSuffix(fmt.Sprintf("%s%s", deploymentName, projectName))
@@ -57,7 +57,7 @@ func CreateAppDeployment(
 		)
 		err := cc.ApplySecret(secretObject)
 		if err != nil {
-			return err
+			return "", err
 		}
 		secretName = resourceName
 	} else {
@@ -81,10 +81,10 @@ func CreateAppDeployment(
 
 		deleteError := cc.DeleteSecret(resourceName, projectNamespace)
 		if deleteError != nil {
-			return fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
+			return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
 		}
 
-		return err
+		return "", err
 	}
 
 	// Service
@@ -100,19 +100,47 @@ func CreateAppDeployment(
 	if err != nil {
 		deleteError := cc.DeleteDeployment(resourceName, projectNamespace)
 		if deleteError != nil {
-			return fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
+			return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
 		}
 
 		deleteError = cc.DeleteSecret(resourceName, projectNamespace)
 		if deleteError != nil {
-			return fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
+			return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
 		}
 
-		return err
+		return "", err
 	}
 
 	// Ingress
 	if *ac.External {
+		certificateObject := cc.CreateCertificateObject(
+			resourceName,
+			projectNamespace,
+			ac.DomainName,
+			resourceLabels,
+			map[string]string{},
+		)
+
+		err = cc.ApplyCertificate(certificateObject)
+		if err != nil {
+
+			deleteError := cc.DeleteService(resourceName, projectNamespace)
+			if deleteError != nil {
+				return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
+			}
+
+			deleteError = cc.DeleteDeployment(resourceName, projectNamespace)
+			if deleteError != nil {
+				return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
+			}
+
+			deleteError = cc.DeleteSecret(resourceName, projectNamespace)
+			if deleteError != nil {
+				return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
+			}
+			return "", err
+		}
+
 		ingressObject := cc.CreateIngressObject(
 			resourceName,
 			projectNamespace,
@@ -127,25 +155,25 @@ func CreateAppDeployment(
 
 			deleteError := cc.DeleteService(resourceName, projectNamespace)
 			if deleteError != nil {
-				return fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
+				return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
 			}
 
 			deleteError = cc.DeleteDeployment(resourceName, projectNamespace)
 			if deleteError != nil {
-				return fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
+				return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
 			}
 
 			deleteError = cc.DeleteSecret(resourceName, projectNamespace)
 			if deleteError != nil {
-				return fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
+				return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
 			}
-			return err
+			return "", err
 		}
 	}
 
 	err = db.SaveDeployment(deploymentName, projectName, deploymentType)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	err = db.SaveAppConfig(
@@ -160,10 +188,14 @@ func CreateAppDeployment(
 		ac.Port,
 	)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	ip, err := cc.GetNginxControllerIp()
+	if err != nil {
+		return "", err
+	}
+	return ip, nil
 }
 
 func DeleteAppDeployment(
@@ -191,6 +223,11 @@ func DeleteAppDeployment(
 	}
 
 	err = cc.DeleteIngress(resourceName, projectNamespace)
+	if err != nil {
+		return err
+	}
+
+	err = cc.DeleteCertificate(resourceName, projectNamespace)
 	if err != nil {
 		return err
 	}
@@ -223,9 +260,50 @@ func DeleteAppDeployment(
 	return nil
 }
 
+func ReissueCertificate(
+	deploymentName string,
+	projectName string,
+	username string,
+	db *repositories.Database,
+	cc *k8s.ClusterConnection,
+) error {
+	nameSuffix := k8s.GetNameSuffix(fmt.Sprintf("%s%s", deploymentName, projectName))
+	resourceName := strings.ToLower(fmt.Sprintf("%s-%s", deploymentName, nameSuffix))
+
+	p, err := db.GetProjectByName(projectName)
+	if err != nil {
+		return err
+	}
+	projectNamespace := p.Namespace
+
+	u, err := db.GetUserByUsername(username)
+	if err != nil {
+		return err
+	}
+	if p.Owner != username && !u.Admin {
+		return errors.New("user lacks permissions to delete deployment")
+	}
+
+	certificateObject, err := cc.GetLiveCertificate(resourceName, projectNamespace)
+	if err != nil {
+		return err
+	}
+
+	err = cc.DeleteCertificate(resourceName, projectNamespace)
+	if err != nil {
+		return err
+	}
+
+	err = cc.ApplyCertificate(certificateObject)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func getExternalUrl(ac *AppConfig) string {
 	if *ac.External {
-		return fmt.Sprintf("http://%s", ac.DomainName)
+		return fmt.Sprintf("https://%s", ac.DomainName)
 	}
 	return ""
 }

@@ -20,12 +20,13 @@ const (
 )
 
 type ClusterConnection struct {
-	Clientset        *kubernetes.Clientset
-	Client           *dynamic.DynamicClient
-	KubeconfigPath   string         `env:"KUBECONFIG"`
-	IngressNamespace string         `env:"INGRESS_NGINX_NAMESPACE" envDefault:"ingress-nginx"`
-	IngressClassName string         `env:"INGRESS_CLASS_NAME" envDefault:"nginx"`
-	ConnectionMode   ConnectionMode `env:"CONNECTION_MODE" envDefault:"internal"`
+	Clientset         *kubernetes.Clientset
+	Client            *dynamic.DynamicClient
+	KubeconfigPath    string         `env:"KUBECONFIG"`
+	IngressNamespace  string         `env:"INGRESS_NGINX_NAMESPACE" envDefault:"ingress-nginx"`
+	IngressClassName  string         `env:"INGRESS_CLASS_NAME" envDefault:"nginx"`
+	ConnectionMode    ConnectionMode `env:"CONNECTION_MODE" envDefault:"internal"`
+	ClusterIssuerName string         `env:"CLUSTER_ISSUER_NAME"`
 }
 
 func NewClusterConnection() (c *ClusterConnection) {

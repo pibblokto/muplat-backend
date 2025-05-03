@@ -41,6 +41,8 @@ spec:
               value: "ingress-nginx"
             - name: INGRESS_CLASS_NAME
               value: nginx
+            - name: CLUSTER_ISSUER_NAME
+              value: le-cluster-issuer
           ports:
           - name: http
             containerPort: 8080

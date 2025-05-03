@@ -33,7 +33,10 @@ type DeleteDeploymentInput struct {
 	Name        string `json:"name" binding:"required"`
 	ProjectName string `json:"projectName" binding:"required"`
 }
-
+type ReissueCertificateInput struct {
+	Name        string `json:"name" binding:"required"`
+	ProjectName string `json:"projectName" binding:"required"`
+}
 type LoginInput struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
