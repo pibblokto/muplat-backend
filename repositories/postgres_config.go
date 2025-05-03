@@ -7,7 +7,7 @@ func (db *Database) GetPostgresConfig(deploymentName, projectName string) (*mode
 	err := db.Connection.
 		Model(&models.PostgresConfig{}).
 		Where("deployment_name = ?", deploymentName).
-		Where("project_name = ?", deploymentName).
+		Where("project_name = ?", projectName).
 		Take(ac).Error
 	if err != nil {
 		return nil, err

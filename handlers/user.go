@@ -85,6 +85,10 @@ func (h *HttpHandler) GetUser(c *gin.Context) {
 	}
 
 	response, err := user.GetUser(username, callerUsername, h.Db)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(http.StatusOK, response)
 }
@@ -97,7 +101,7 @@ func (h *HttpHandler) GetUsers(c *gin.Context) {
 	}
 
 	response, err := user.GetUsers(callerUsername, h.Db)
-	if err != err {
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

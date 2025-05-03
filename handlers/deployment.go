@@ -106,3 +106,38 @@ func (h *HttpHandler) DeleteDeployment(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "deployment " + input.Name + " was deleted"})
 }
+
+func (h *HttpHandler) GetDeployment(c *gin.Context) {
+	projectName := c.Param("project")
+	deploymentName := c.Param("deployment")
+	username, err := h.Jwt.ExtractTokenUsername(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response, err := deployment.GetDeployment(deploymentName, projectName, username, h.Db)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *HttpHandler) GetDeployments(c *gin.Context) {
+	projectName := c.Param("project")
+	username, err := h.Jwt.ExtractTokenUsername(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response, err := deployment.GetDeployments(projectName, username, h.Db)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}

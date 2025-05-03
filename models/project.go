@@ -3,8 +3,8 @@ package models
 import "time"
 
 type Project struct {
-	Name          string `gorm:"primarykey;uniqueIndex"`
-	Owner         string
+	Name          string `gorm:"primarykey"`
+	Owner         string `gorm:"index:idx_own"`
 	Namespace     string
 	NetworkPolicy string
 	CreatedAt     time.Time

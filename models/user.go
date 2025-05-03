@@ -10,7 +10,7 @@ import (
 )
 
 type User struct {
-	Username  string `gorm:"primarykey,uniqueIndex"`
+	Username  string `gorm:"primarykey"`
 	Admin     bool
 	Password  string
 	CreatedAt time.Time

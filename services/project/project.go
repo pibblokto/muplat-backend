@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/muplat/muplat-backend/models"
 	"github.com/muplat/muplat-backend/pkg/k8s"
 	"github.com/muplat/muplat-backend/repositories"
 )
@@ -119,6 +120,7 @@ func GetProject(projectName, callerUsername string, db *repositories.Database) (
 
 	projects := &gin.H{
 		"name":        p.Name,
+		"owner":       p.Owner,
 		"createdAt":   p.CreatedAt,
 		"deployments": responseDeployments,
 	}
@@ -131,14 +133,19 @@ func GetProjects(callerUsername string, db *repositories.Database) (*gin.H, erro
 		return nil, err
 	}
 
-	if !u.Admin {
-		return nil, errors.New("you lack permissions to view projects")
+	var dbProjects []*models.Project
+	if u.Admin {
+		dbProjects, err = db.GetProjects()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		dbProjects, err = db.GetProjectsByOwner(u.Username)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	dbProjects, err := db.GetProjects()
-	if err != nil {
-		return nil, err
-	}
 	responseProjects := []ProjectResponse{}
 	for _, p := range dbProjects {
 		responseProjects = append(responseProjects, ProjectResponse{p.Name, p.Owner, p.CreatedAt})
