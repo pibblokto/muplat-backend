@@ -2,6 +2,19 @@ package repositories
 
 import "github.com/muplat/muplat-backend/models"
 
+func (db *Database) GetAppConfig(deploymentName, projectName string) (*models.AppConfig, error) {
+	ac := &models.AppConfig{}
+	err := db.Connection.
+		Model(&models.AppConfig{}).
+		Where("deployment_name = ?", deploymentName).
+		Where("project_name = ?", projectName).
+		Take(ac).Error
+	if err != nil {
+		return nil, err
+	}
+	return ac, nil
+}
+
 func (db *Database) SaveAppConfig(
 	deploymentName,
 	projectName,

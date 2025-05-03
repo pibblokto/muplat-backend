@@ -15,6 +15,8 @@ func DeclareRoutes(r *gin.Engine, httpHandler *handlers.HttpHandler) error {
 	projects := r.Group("/api/project")
 	projects.Use(middlewares.JwtAuth(httpHandler.Jwt))
 
+	projects.GET("", httpHandler.GetProjects)
+	projects.GET("/:project", httpHandler.GetProject)
 	projects.POST("", httpHandler.CreateProject)
 	projects.DELETE("", httpHandler.DeleteProject)
 
@@ -22,6 +24,8 @@ func DeclareRoutes(r *gin.Engine, httpHandler *handlers.HttpHandler) error {
 	users := r.Group("/api/auth")
 	users.Use(middlewares.JwtAuth(httpHandler.Jwt))
 
+	users.GET("/user/:username", httpHandler.GetUser)
+	users.GET("/user", httpHandler.GetUsers)
 	users.POST("/user", httpHandler.AddUser)
 	users.DELETE("/user", httpHandler.DeleteUser)
 
@@ -29,6 +33,8 @@ func DeclareRoutes(r *gin.Engine, httpHandler *handlers.HttpHandler) error {
 	deployments := r.Group("/api/deployment")
 	deployments.Use(middlewares.JwtAuth(httpHandler.Jwt))
 
+	deployments.GET("/:project/:deployment", httpHandler.GetDeployment)
+	deployments.GET("/:project", httpHandler.GetDeployments)
 	deployments.POST("", httpHandler.CreateDeployment)
 	deployments.DELETE("", httpHandler.DeleteDeployment)
 	return nil

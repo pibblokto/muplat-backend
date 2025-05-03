@@ -37,7 +37,7 @@ func CreatePostgresDeployment(
 		database = *pc.Database
 	}
 
-	p, err := db.GetPorjectByName(projectName)
+	p, err := db.GetProjectByName(projectName)
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,7 @@ func DeletePostgresDeployment(
 	nameSuffix := k8s.GetNameSuffix(fmt.Sprintf("%s%s", deploymentName, projectName))
 	resourceName := strings.ToLower(fmt.Sprintf("%s-%s", deploymentName, nameSuffix))
 
-	p, err := db.GetPorjectByName(projectName)
+	p, err := db.GetProjectByName(projectName)
 	if err != nil {
 		return err
 	}

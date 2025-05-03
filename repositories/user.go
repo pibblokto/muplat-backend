@@ -36,3 +36,14 @@ func (db *Database) DeleteUser(username string) error {
 	}
 	return nil
 }
+
+func (db *Database) GetUsers() ([]*models.User, error) {
+	u := []*models.User{}
+	err := db.Connection.Model(&models.User{}).Order("created_at DESC").Find(&u).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return u, err
+}

@@ -1,6 +1,9 @@
 package deployment
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type DeploymentType string
 type AppTier string
@@ -67,4 +70,10 @@ type AppConfig struct {
 type PostgresConfig struct {
 	DiskSize uint    `json:"diskSize" binding:"required"`
 	Database *string `json:"database"`
+}
+
+type DeploymentResponse struct {
+	Name      string
+	Type      string
+	CreatedAt time.Time
 }
