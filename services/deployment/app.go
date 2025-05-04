@@ -260,47 +260,6 @@ func DeleteAppDeployment(
 	return nil
 }
 
-func ReissueCertificate(
-	deploymentName string,
-	projectName string,
-	username string,
-	db *repositories.Database,
-	cc *k8s.ClusterConnection,
-) error {
-	nameSuffix := k8s.GetNameSuffix(fmt.Sprintf("%s%s", deploymentName, projectName))
-	resourceName := strings.ToLower(fmt.Sprintf("%s-%s", deploymentName, nameSuffix))
-
-	p, err := db.GetProjectByName(projectName)
-	if err != nil {
-		return err
-	}
-	projectNamespace := p.Namespace
-
-	u, err := db.GetUserByUsername(username)
-	if err != nil {
-		return err
-	}
-	if p.Owner != username && !u.Admin {
-		return errors.New("user lacks permissions to delete deployment")
-	}
-
-	certificateObject, err := cc.GetLiveCertificate(resourceName, projectNamespace)
-	if err != nil {
-		return err
-	}
-
-	err = cc.DeleteCertificate(resourceName, projectNamespace)
-	if err != nil {
-		return err
-	}
-
-	err = cc.ApplyCertificate(certificateObject)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func getExternalUrl(ac *AppConfig) string {
 	if *ac.External {
 		return fmt.Sprintf("https://%s", ac.DomainName)

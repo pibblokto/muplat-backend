@@ -146,25 +146,3 @@ func (h *HttpHandler) GetDeployments(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
-
-func (h *HttpHandler) ReissueCertificate(c *gin.Context) {
-	var input ReissueCertificateInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	username, err := h.Jwt.ExtractTokenUsername(c)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	err = deployment.ReissueCertificate(input.Name, input.ProjectName, username, h.Db, h.ClusterConn)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "reissuing started"})
-}
