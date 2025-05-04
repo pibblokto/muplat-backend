@@ -8,10 +8,9 @@ import (
 
 type GlobalConfig struct {
 	// Global dependencies
-	PlatformDomain string `env:"PLATFORM_DOMAIN"`
-	Db             *repositories.Database
-	ClusterConn    *k8s.ClusterConnection
-	Jwt            *jwt.JwtConfig
+	Db          *repositories.Database
+	ClusterConn *k8s.ClusterConnection
+	Jwt         *jwt.JwtConfig
 }
 
 func InitGlobalConfig() *GlobalConfig {
@@ -19,5 +18,6 @@ func InitGlobalConfig() *GlobalConfig {
 	globalConf.Db = repositories.NewDatabase()
 	globalConf.ClusterConn = k8s.NewClusterConnection()
 	globalConf.Jwt = jwt.NewJwtConfig()
+
 	return globalConf
 }

@@ -76,17 +76,6 @@ func (h *HttpHandler) DeleteUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("deleted user %s", input.Username)})
 }
 
-// GetUser godoc
-// @Summary      Get user by name
-// @Description  Admin/owner only. Successful response shape:
-//
-//	{"username":"...", "isAdmin": "...", "projects": [{...},{...}]}
-//
-// @Tags         users
-// @Accept       json
-// @Produce      json
-// @Success      200  {object}  map[string][]user.UserResponse
-// @Router       /api/auth/user/{username} [get]
 func (h *HttpHandler) GetUser(c *gin.Context) {
 	username := c.Param("username")
 	callerUsername, err := h.Jwt.ExtractTokenUsername(c)
@@ -104,17 +93,6 @@ func (h *HttpHandler) GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// GetUsers godoc
-// @Summary      Get all registered users
-// @Description  Admin‑only. Successful response shape:
-//
-//	{"users":[{...}, {...}]}
-//
-// @Tags         users
-// @Accept       json
-// @Produce      json
-// @Success      200  {object}  map[string][]user.UserResponse
-// @Router       /api/auth/user [get]
 func (h *HttpHandler) GetUsers(c *gin.Context) {
 	callerUsername, err := h.Jwt.ExtractTokenUsername(c)
 	if err != nil {

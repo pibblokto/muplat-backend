@@ -43,8 +43,6 @@ spec:
               value: nginx
             - name: CLUSTER_ISSUER_NAME
               value: le-cluster-issuer
-            - name: PLATFORM_DOMAIN
-              value: app.mukinabaht.com
           ports:
           - name: http
             containerPort: 8080
