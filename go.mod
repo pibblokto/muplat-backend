@@ -4,7 +4,6 @@ go 1.24.0
 
 require (
 	github.com/caarlos0/env v3.5.0+incompatible
-	github.com/caarlos0/env/v11 v11.3.1
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	golang.org/x/crypto v0.36.0

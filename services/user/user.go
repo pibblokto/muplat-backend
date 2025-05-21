@@ -86,9 +86,9 @@ func GetUser(username, callerUsername string, db *repositories.Database) (*gin.H
 	}
 
 	user := &gin.H{
-		"username": u.Username,
-		"isAdmin":  u.CreatedAt,
-		"projects": responseUserProjects,
+		"username":  u.Username,
+		"createdAt": u.CreatedAt,
+		"projects":  responseUserProjects,
 	}
 	return user, nil
 }

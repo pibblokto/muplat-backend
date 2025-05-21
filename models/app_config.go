@@ -5,7 +5,7 @@ type AppConfig struct {
 	ProjectName    string `gorm:"primarykey; not null; index:idx_proj"`
 	Repository     string
 	Tag            string
-	ExternalUrl    string
+	ExternalUrl    string `gorm:"index:idx_exturl;"`
 	InternalUrl    string
 	Tier           string
 	Port           uint

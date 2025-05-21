@@ -2,11 +2,13 @@ package k8s
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 func (c *ClusterConnection) CreateDeploymentObject(
@@ -88,7 +90,7 @@ func (c *ClusterConnection) ApplyDeployment(d *v1.Deployment) error {
 	return nil
 }
 
-func (c *ClusterConnection) DeleteDeployment(dName string, dNamespace string) error {
+func (c *ClusterConnection) DeleteDeployment(dName, dNamespace string) error {
 	deployment, _ := c.Clientset.AppsV1().Deployments(dNamespace).Get(context.Background(), dName, metav1.GetOptions{})
 	if deployment.Name != dName {
 		return nil
@@ -98,4 +100,24 @@ func (c *ClusterConnection) DeleteDeployment(dName string, dNamespace string) er
 		return err
 	}
 	return nil
+}
+
+func (c *ClusterConnection) PatchDeployment(dName, dNamespace string, patch []byte) error {
+	deployment, _ := c.Clientset.AppsV1().Deployments(dNamespace).Get(context.Background(), dName, metav1.GetOptions{})
+	if deployment.Name != dName {
+		return errors.New("deployment not found, nothing to patch")
+	}
+	_, err := c.Clientset.AppsV1().Deployments(dNamespace).Patch(context.Background(), dName, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *ClusterConnection) GetDeploymentImage(dName, dNamespace string) (string, error) {
+	deployment, _ := c.Clientset.AppsV1().Deployments(dNamespace).Get(context.Background(), dName, metav1.GetOptions{})
+	if deployment.Name != dName {
+		return "", errors.New("deployment not found")
+	}
+	return deployment.Spec.Template.Spec.Containers[0].Image, nil
 }

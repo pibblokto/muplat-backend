@@ -8,6 +8,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 func (c *ClusterConnection) CreatePostgresClusterObject(
@@ -73,6 +74,20 @@ func (c *ClusterConnection) DeletePostgresCluster(pcName, pcNamespace string) er
 		return nil
 	}
 	err := c.Client.Resource(gvr).Namespace(pcNamespace).Delete(context.Background(), pcName, v1.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *ClusterConnection) PatchPostgresCluster(pcName, pcNamespace string, patch []byte) error {
+	gvr := schema.GroupVersionResource{Group: "postgresql.cnpg.io", Version: "v1", Resource: "clusters"}
+	postgresCluster, err := c.Client.Resource(gvr).Namespace(pcNamespace).Get(context.Background(), pcName, v1.GetOptions{})
+
+	if postgresCluster.GetName() != pcName {
+		return err
+	}
+	_, err = c.Client.Resource(gvr).Namespace(pcNamespace).Patch(context.Background(), pcName, types.StrategicMergePatchType, patch, v1.PatchOptions{})
 	if err != nil {
 		return err
 	}

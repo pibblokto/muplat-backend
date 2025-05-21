@@ -7,6 +7,7 @@ import (
 
 	"github.com/muplat/muplat-backend/pkg/k8s"
 	"github.com/muplat/muplat-backend/repositories"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
 func CreateAppDeployment(
@@ -36,6 +37,12 @@ func CreateAppDeployment(
 	}
 	if p.Owner != username && !u.Admin {
 		return "", errors.New("user lacks permissions to create deployment")
+	}
+
+	var externalUrl string = getExternalUrl(ac)
+	_, err = db.GetAppConfigByExternalUrl(externalUrl)
+	if err == nil && externalUrl != "" {
+		return "", fmt.Errorf("external url %s is already in use", externalUrl)
 	}
 
 	nameSuffix := k8s.GetNameSuffix(fmt.Sprintf("%s%s", deploymentName, projectName))
@@ -113,39 +120,13 @@ func CreateAppDeployment(
 
 	// Ingress
 	if *ac.External {
-		certificateObject := cc.CreateCertificateObject(
-			resourceName,
-			projectNamespace,
-			ac.DomainName,
-			resourceLabels,
-			map[string]string{},
-		)
-
-		err = cc.ApplyCertificate(certificateObject)
-		if err != nil {
-
-			deleteError := cc.DeleteService(resourceName, projectNamespace)
-			if deleteError != nil {
-				return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
-			}
-
-			deleteError = cc.DeleteDeployment(resourceName, projectNamespace)
-			if deleteError != nil {
-				return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
-			}
-
-			deleteError = cc.DeleteSecret(resourceName, projectNamespace)
-			if deleteError != nil {
-				return "", fmt.Errorf("failed to create app %s and delete orphan resources", deploymentName)
-			}
-			return "", err
-		}
-
 		ingressObject := cc.CreateIngressObject(
 			resourceName,
 			projectNamespace,
 			resourceLabels,
-			map[string]string{},
+			map[string]string{
+				"cert-manager.io/cluster-issuer": cc.ClusterIssuerName,
+			},
 			ac.DomainName,
 			resourceName,
 			ac.Port,
@@ -181,8 +162,8 @@ func CreateAppDeployment(
 		projectName,
 		ac.Repository,
 		ac.Tag,
-		getExternalUrl(ac),
-		fmt.Sprintf("http://%s:%d", resourceName, ac.Port),
+		externalUrl,
+		fmt.Sprintf("%s:%d", resourceName, ac.Port),
 		string(ac.Tier),
 		resourceName,
 		ac.Port,
@@ -223,37 +204,37 @@ func DeleteAppDeployment(
 	}
 
 	err = cc.DeleteIngress(resourceName, projectNamespace)
-	if err != nil {
+	if err != nil && !kerrors.IsNotFound(err) {
 		return err
 	}
 
 	err = cc.DeleteCertificate(resourceName, projectNamespace)
-	if err != nil {
+	if err != nil && !kerrors.IsNotFound(err) {
 		return err
 	}
 
 	err = cc.DeleteService(resourceName, projectNamespace)
-	if err != nil {
+	if err != nil && !kerrors.IsNotFound(err) {
 		return err
 	}
 
 	err = cc.DeleteDeployment(resourceName, projectNamespace)
-	if err != nil {
+	if err != nil && !kerrors.IsNotFound(err) {
 		return err
 	}
 
 	err = cc.DeleteSecret(resourceName, projectNamespace)
-	if err != nil {
+	if err != nil && !kerrors.IsNotFound(err) {
 		return err
 	}
 
 	err = db.DeleteAppConfig(deploymentName, projectName)
-	if err != nil {
+	if err != nil && !kerrors.IsNotFound(err) {
 		return err
 	}
 
 	err = db.DeleteDeployment(deploymentName, projectName)
-	if err != nil {
+	if err != nil && !kerrors.IsNotFound(err) {
 		return err
 	}
 
@@ -289,7 +270,7 @@ func ReissueCertificate(
 		return err
 	}
 
-	err = cc.DeleteCertificate(resourceName, projectNamespace)
+	err = k8s.MarkManuallyTriggered(certificateObject)
 	if err != nil {
 		return err
 	}
@@ -300,6 +281,45 @@ func ReissueCertificate(
 	}
 	return nil
 }
+
+//func PatchAppDeployment(
+//	deploymentName,
+//	projectName,
+//	deploymentType,
+//	username string,
+//	ac *PatchAppConfig,
+//	db *repositories.Database,
+//	cc *k8s.ClusterConnection,
+//) (string, error) {
+//	nameSuffix := k8s.GetNameSuffix(fmt.Sprintf("%s%s", deploymentName, projectName))
+//	resourceName := strings.ToLower(fmt.Sprintf("%s-%s", deploymentName, nameSuffix))
+//
+//	if ac == nil {
+//		return "", errors.New("app config was not provided")
+//	}
+//	if *ac.External && ac.DomainName == "" {
+//		return "", errors.New("external flag was set but no domain was specified")
+//	}
+//	p, err := db.GetProjectByName(projectName)
+//	if err != nil {
+//		return "", err
+//	}
+//	projectNamespace := p.Namespace
+//
+//	u, err := db.GetUserByUsername(username)
+//	if err != nil {
+//		return "", err
+//	}
+//	if p.Owner != username && !u.Admin {
+//		return "", errors.New("user lacks permissions to create deployment")
+//	}
+//
+//	deploymentPatchMap := map[string]interface{}{}
+//
+//	if ac.Repository != "" {
+//		deploymentPatchMap[""]
+//	}
+//}
 
 func getExternalUrl(ac *AppConfig) string {
 	if *ac.External {

@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 func (c *ClusterConnection) CreateCertificateObject(
@@ -76,6 +78,20 @@ func (c *ClusterConnection) DeleteCertificate(crtName, crtNamespace string) erro
 	return nil
 }
 
+func (c *ClusterConnection) PatchCertificate(crtName, crtNamespace string, patch []byte) error {
+	gvr := schema.GroupVersionResource{Group: "cert-manager.io", Version: "v1", Resource: "certificates"}
+	crt, err := c.Client.Resource(gvr).Namespace(crtNamespace).Get(context.Background(), crtName, v1.GetOptions{})
+
+	if crt.GetName() != crtName {
+		return err
+	}
+	_, err = c.Client.Resource(gvr).Namespace(crtNamespace).Patch(context.Background(), crtName, types.StrategicMergePatchType, patch, v1.PatchOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (c *ClusterConnection) GetLiveCertificate(crtName string, crtNamespace string) (*unstructured.Unstructured, error) {
 	gvr := schema.GroupVersionResource{Group: "cert-manager.io", Version: "v1", Resource: "certificates"}
 	certificate, _ := c.Client.Resource(gvr).Namespace(crtNamespace).Get(context.Background(), crtName, v1.GetOptions{})
@@ -83,4 +99,40 @@ func (c *ClusterConnection) GetLiveCertificate(crtName string, crtNamespace stri
 		return nil, errors.New("no certificate was found")
 	}
 	return certificate, nil
+}
+
+func MarkManuallyTriggered(obj *unstructured.Unstructured) error {
+	now := time.Now().UTC().Format(time.RFC3339)
+
+	newCond := map[string]interface{}{
+		"type":               "Issuing",
+		"status":             "True",
+		"reason":             "ManuallyTriggered",
+		"message":            "Re-issuance manually requested",
+		"lastTransitionTime": now,
+	}
+
+	conds, found, err := unstructured.NestedSlice(obj.Object, "status", "conditions")
+	if err != nil {
+		return err
+	}
+	if !found {
+		conds = []interface{}{}
+	}
+
+	replaced := false
+	for i, c := range conds {
+		if m, ok := c.(map[string]interface{}); ok {
+			if t, _ := m["type"].(string); t == "Issuing" {
+				conds[i] = newCond
+				replaced = true
+				break
+			}
+		}
+	}
+	if !replaced {
+		conds = append(conds, newCond)
+	}
+
+	return unstructured.SetNestedSlice(obj.Object, conds, "status", "conditions")
 }

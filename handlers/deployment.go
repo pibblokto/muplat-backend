@@ -147,12 +147,9 @@ func (h *HttpHandler) GetDeployments(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func (h *HttpHandler) ReissueCertificate(c *gin.Context) {
-	var input ReissueCertificateInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+func (h *HttpHandler) ReissueAppCertificate(c *gin.Context) {
+	projectName := c.Param("project")
+	deploymentName := c.Param("deployment")
 
 	username, err := h.Jwt.ExtractTokenUsername(c)
 	if err != nil {
@@ -160,7 +157,7 @@ func (h *HttpHandler) ReissueCertificate(c *gin.Context) {
 		return
 	}
 
-	err = deployment.ReissueCertificate(input.Name, input.ProjectName, username, h.Db, h.ClusterConn)
+	err = deployment.ReissueCertificate(projectName, deploymentName, username, h.Db, h.ClusterConn)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
