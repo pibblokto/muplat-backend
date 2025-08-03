@@ -2,9 +2,11 @@ package k8s
 
 import (
 	"context"
+	"errors"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
@@ -67,4 +69,29 @@ func (c *ClusterConnection) DeleteService(sName string, sNamespace string) error
 		return err
 	}
 	return nil
+}
+
+func (c *ClusterConnection) PatchService(sName, sNamespace string, patch []byte) error {
+	service, _ := c.Clientset.CoreV1().Services(sNamespace).Get(context.Background(), sName, metav1.GetOptions{})
+	if service.Name != sName {
+		return errors.New("service not found, nothing to patch")
+	}
+	_, err := c.Clientset.CoreV1().Services(sNamespace).Patch(context.Background(), sName, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *ClusterConnection) GetNginxControllerIp() (string, error) {
+	serviceList, err := c.Clientset.CoreV1().Services(c.IngressNamespace).List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return "", nil
+	}
+	for _, s := range serviceList.Items {
+		if s.Spec.Type == v1.ServiceTypeLoadBalancer {
+			return s.Spec.LoadBalancerIP, nil
+		}
+	}
+	return "", errors.New("nginx controller has no LoadBalancer services in its namespace")
 }

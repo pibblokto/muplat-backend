@@ -72,6 +72,20 @@ type PostgresConfig struct {
 	Database *string `json:"database"`
 }
 
+type PatchAppConfig struct {
+	Repository string            `json:"repository"`
+	Tag        string            `json:"tag"`
+	External   *bool             `json:"external"`
+	DomainName string            `json:"domainName"`
+	Tier       AppTier           `json:"tier"`
+	Port       uint              `json:"port"`
+	EnvVars    map[string]string `json:"envVars"`
+}
+
+type PatchPostgresConfig struct {
+	DiskSize uint `json:"diskSize"`
+}
+
 type DeploymentResponse struct {
 	Name      string
 	Type      string

@@ -35,6 +35,7 @@ func DeclareRoutes(r *gin.Engine, httpHandler *handlers.HttpHandler) error {
 
 	deployments.GET("/:project/:deployment", httpHandler.GetDeployment)
 	deployments.GET("/:project", httpHandler.GetDeployments)
+	deployments.POST("/:project/:deployment/reissue", httpHandler.ReissueAppCertificate)
 	deployments.POST("", httpHandler.CreateDeployment)
 	deployments.DELETE("", httpHandler.DeleteDeployment)
 	return nil

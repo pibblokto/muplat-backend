@@ -26,7 +26,7 @@ spec:
             - name: POSTGRES_USER
               value: "app"
             - name: POSTGRES_PASSWORD
-              value: "nR6uwsndQcHtHyv1tyzacCm1zqQLh7GAWY2mVQovq4fxuCioGTE44if6szwigKU9"
+              value: "hDwglKaI8pUTpk6YCfG03ZyIlsaDExiGhN7JDlkSqHy1DeS6Y7pyNS0EuCNCy2PG"
             - name: DATABASE
               value: app
             - name: INIT_USER
@@ -41,6 +41,8 @@ spec:
               value: "ingress-nginx"
             - name: INGRESS_CLASS_NAME
               value: nginx
+            - name: CLUSTER_ISSUER_NAME
+              value: le-cluster-issuer
           ports:
           - name: http
             containerPort: 8080

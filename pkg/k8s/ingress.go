@@ -5,9 +5,12 @@ import (
 	//v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"context"
+	"errors"
+	"fmt"
 
 	v1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 func (c *ClusterConnection) CreateIngressObject(
@@ -29,6 +32,12 @@ func (c *ClusterConnection) CreateIngressObject(
 		},
 		Spec: v1.IngressSpec{
 			IngressClassName: &c.IngressClassName,
+			TLS: []v1.IngressTLS{
+				{
+					Hosts:      []string{domainName},
+					SecretName: fmt.Sprintf("crt-%s", name),
+				},
+			},
 			Rules: []v1.IngressRule{
 				{
 					Host: domainName,
@@ -79,6 +88,18 @@ func (c *ClusterConnection) DeleteIngress(iName string, iNamespace string) error
 		return nil
 	}
 	err := c.Clientset.NetworkingV1().Ingresses(iNamespace).Delete(context.Background(), iName, metav1.DeleteOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *ClusterConnection) PatchIngress(iName, iNamespace string, patch []byte) error {
+	ingress, _ := c.Clientset.NetworkingV1().Ingresses(iNamespace).Get(context.Background(), iName, metav1.GetOptions{})
+	if ingress.Name != iName {
+		return errors.New("ingress not found, nothing to patch")
+	}
+	_, err := c.Clientset.NetworkingV1().Ingresses(iNamespace).Patch(context.Background(), iName, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
 	if err != nil {
 		return err
 	}
